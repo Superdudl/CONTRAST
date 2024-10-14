@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PIL import Image
 import matplotlib.pyplot as plt
 import io
-from postprocess import postprocess
+from postprocess import postprocess, histogram
 
 # from form_tst import Ui_Widget
 __RPI__ = False
@@ -301,26 +301,10 @@ class CameraApp(QMainWindow):
             ctrls.AnalogueGain = 4.0
             ctrls.ExposureTime = 20000
             ctrls.AeEnable = False
-            # ctrls.ColourGains = (1.0,1.0)
-            # ctrls.AeFlickerMode = Picamera2.FlickerOff
-            # ctrls.AfMode = Manual
             ctrls.AwbEnable = False
             ctrls.NoiseReductionMode = False
             self.camera.set_controls(ctrls)
             self.camera.start()
-            # set camera settings
-            # ctrls = Controls(self.camera)
-            # ctrls.AnalogueGain = 4.0
-            # ctrls.ExposureTime = 20000
-            # ctrls.AeEnable=False
-            # ctrls.ColourGains = (1.0,1.0)
-            # ctrls.AeFlickerMode = Picamera2.FlickerOff
-            # ctrls.AfMode = Manual
-            # ctrls.AwbEnable = False
-            # ctrls.NoiseReductionMode = False
-            # self.camera.set_controls(ctrls)
-            # time.sleep(1)
-            # get and print sensor mode
             metadata = self.camera.capture_metadata()
             print(metadata)
         self.initUI()
@@ -356,18 +340,6 @@ class CameraApp(QMainWindow):
         if (__PC__ == True):
             frame2 = frame.copy()
 
-        # в 4.2667 раза меньше чем для кропа исходника
-        # y_size_start = 23
-        # y_size_stop  = 328
-        # x_size_start = 117
-        # x_size_stop  = 352
-        # for i in range (x_size_start,x_size_stop,1):
-        #    res3[y_size_start,i]=255
-        #    res3[y_size_stop,i]=255
-        # for i in range(y_size_start,y_size_stop,1):
-        #    res3[i,x_size_start]=255
-        #    res3[i,x_size_stop]=255
-
         if __RPI__ == True:
             pi1.write(21, 1)
         # range frame
@@ -386,10 +358,10 @@ class CameraApp(QMainWindow):
         frame3 = cv2.resize(frame2, (480, 360))
         # rotate from for display
         res3 = cv2.rotate(frame3, cv2.ROTATE_90_COUNTERCLOCKWISE)
-        # resize image for processing, decrease by 2
-        # crop_img = cv2.resize(crop_img, ((int(crop_img.shape[1] / 2)), int(crop_img.shape[0] / 2)))
+
         # computing contrast
         self.result_proc = postprocess(crop_img)
+        self.histogram = histogram(crop_img)
         if __RPI__ == True:
             pi1.write(21, 0)
 
@@ -405,7 +377,7 @@ class CameraApp(QMainWindow):
             self.White_level_label.setText("{0:3.3f}".format(self.result_proc["avg_paper"]))
         # create Qimage
         self.qimage = QImage(res3, 360, 480, 360, QImage.Format_Indexed8)
-        self.qimage2 = QImage(self.result_proc["histogram"], 384, 192, 384*3, QImage.Format_RGB888)
+        self.qimage2 = QImage(self.histogram, 384, 192, 384*3, QImage.Format_RGB888)
         # display images
         self.Img_label.setPixmap(QPixmap.fromImage(self.qimage))
         self.Hist_label.setPixmap(QPixmap.fromImage(self.qimage2))

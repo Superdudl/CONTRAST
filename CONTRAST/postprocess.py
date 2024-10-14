@@ -17,13 +17,7 @@ def profiler(func):
 
     return wrapper
 
-
-@profiler
-def postprocess(img):
-    # Определение маски для цифр и бумаги
-    numbers_mask = (img >= 50) & (img <= 120)
-    paper_mask = (img >= 200) & (img <= 240)
-
+def histogram(img):
     # Вычисление гистограммы
     t0 = time.time()
     bins = 128
@@ -41,13 +35,18 @@ def postprocess(img):
 
     t1 = time.time()
     print(f'Time: {t1 - t0:.6}')
+    return histogram
+
+def postprocess(img):
+    # Определение маски для цифр и бумаги
+    numbers_mask = (img >= 50) & (img <= 120)
+    paper_mask = (img >= 200) & (img <= 240)
 
     avg_numbers = np.mean(img[numbers_mask]) if np.any(numbers_mask) else None
     avg_paper = np.mean(img[paper_mask]) if np.any(paper_mask) else None
     contrast = avg_paper / avg_numbers if avg_numbers is not None and avg_paper is not None else None
 
     return {
-        "histogram": histogram,
         'avg_numbers': avg_numbers,
         'avg_paper': avg_paper,
         'contrast': contrast,
@@ -61,6 +60,7 @@ if __name__ == '__main__':
     img = cv2.resize(img, (2048, 1596))
 
     res = postprocess(img)
+    histogram = histogram(img)
 
     print(f'avg_numbers = {res["avg_numbers"]}\n'
           f'avg_paper = {res["avg_paper"]}\n'
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
     # Show histogram
     cv2.namedWindow('HISTOGRAM', cv2.WINDOW_AUTOSIZE)
-    cv2.imshow('HISTOGRAM', res['histogram'])
+    cv2.imshow('HISTOGRAM', histogram)
 
     img_numbers = img & res['numbers_mask']
     img_paper = img & res['paper_mask']
