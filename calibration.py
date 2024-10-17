@@ -2,6 +2,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+class Mera:
+    def __init__(self):
+        self.value = []
+        self.nominal_value = []
+
+    def add_mera(self, value, nominal_value):
+        self.value.append(value)
+        self.nominal_value.append(nominal_value)
+
+    def delete_mera(self, id):
+        self.value.pop(id)
+        self.nominal_value.pop(id)
+
+    def __len__(self):
+        return len(self.value)
+
+
 def calibrate(pixel_value, nominal_value, gray_templates=None):
     n = np.size(pixel_value)
 
@@ -31,6 +48,8 @@ def plot_regression(x, y, k, b):
 
 
 if __name__ == '__main__':
+    a = Mera(0, 22, 1)
+    b = Mera(0, 22, 1)
     x = np.array([10, 100, 180, 240])
     y = np.array([15, 40, 60, 90])
 

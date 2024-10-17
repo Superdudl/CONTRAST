@@ -9,6 +9,8 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from calibration import Mera
+
 # from form_tst import Ui_Widget
 __RPI__ = False
 __PC__ = True
@@ -19,7 +21,6 @@ if (__RPI__ == True):
     import pigpio
 
     pi1 = pigpio.pi()
-
 
 X_SIZE_IMAGE_RAW_1 = int(2048)
 Y_SIZE_IMAGE_RAW_1 = int(1536)
@@ -125,6 +126,7 @@ class CameraApp(QMainWindow):
         self.tabWidget.addTab(self.Measure_page, "")
         self.Calibration_page = QtWidgets.QWidget()
         self.Calibration_page.setObjectName("Calibration_page")
+
         self.Mera_number_label = QtWidgets.QLabel(self.Calibration_page)
         self.Mera_number_label.setGeometry(QtCore.QRect(10, 210, 150, 50))
         self.Mera_number_label.setObjectName("Mera_number_label")
@@ -132,15 +134,20 @@ class CameraApp(QMainWindow):
         self.Mera_number_lineEdit.setGeometry(QtCore.QRect(210, 210, 100, 50))
         self.Mera_number_lineEdit.setMaxLength(3)
         self.Mera_number_lineEdit.setReadOnly(True)
+        self.Mera_number_lineEdit.setAlignment(QtCore.Qt.AlignCenter)
         self.Mera_number_lineEdit.setObjectName("Mera_number_lineEdit")
+
         self.Nominal_lineEdit = QtWidgets.QLineEdit(self.Calibration_page)
         self.Nominal_lineEdit.setGeometry(QtCore.QRect(210, 80, 100, 50))
         self.Nominal_lineEdit.setMaxLength(3)
         self.Nominal_lineEdit.setReadOnly(True)
         self.Nominal_lineEdit.setObjectName("Nominal_lineEdit")
+
         self.Nominal_label = QtWidgets.QLabel(self.Calibration_page)
         self.Nominal_label.setGeometry(QtCore.QRect(10, 80, 150, 50))
+        self.Nominal_lineEdit.setAlignment(QtCore.Qt.AlignCenter)
         self.Nominal_label.setObjectName("Nominal_label")
+
         self.Measure_mera_label = QtWidgets.QLabel(self.Calibration_page)
         self.Measure_mera_label.setGeometry(QtCore.QRect(10, 140, 150, 50))
         self.Measure_mera_label.setObjectName("Measure_mera_label")
@@ -367,7 +374,7 @@ class CameraApp(QMainWindow):
         self.Nominal_plus_pushButton.setText(_translate("Widget", "+"))
         self.Nominal_minus_pushButton.setText(_translate("Widget", "-"))
         self.Mera_number_minus_pushButton.setText(_translate("Widget", "-"))
-        self.Text_calibrate_page_label.setText(_translate("Widget", "Значения оптической плотности"))
+        self.Text_calibrate_page_label.setText(_translate("Widget", "Всего мер "))
         self.Mera_num_max_label.setText(_translate("Widget", "1/4"))
         self.Mera_push_pushButton.setText(_translate("Widget", "Добавить меру"))
         self.Mera_delete_pushButton.setText(_translate("Widget", "Удалить меру"))
@@ -405,6 +412,10 @@ class CameraApp(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        # Калибровка
+        self.mera = Mera()
+        self.mera_id = None
 
         # Create an instance of the UI
         # self.ui = Ui_Widget()
@@ -458,6 +469,7 @@ class CameraApp(QMainWindow):
         self.Measure_pushButton.clicked.connect(self.Measure_from_button)
         self.Nominal_minus_pushButton.clicked.connect(self.minus_nominal)
         self.Nominal_plus_pushButton.clicked.connect(self.plus_nominal)
+        self.Mera_push_pushButton.clicked.connect(self.add_mera)
         self.Mera_number_minus_pushButton.clicked.connect(self.minus_mera_num)
         self.Mera_number_plus_pushButton.clicked.connect(self.plus_mera_num)
         self.White_LED_minus_pushButton.clicked.connect(self.minus_white_led)
@@ -569,6 +581,11 @@ class CameraApp(QMainWindow):
         print("click minus nominal\r\n")
 
     def minus_mera_num(self):
+        if len(self.mera) > 0:
+            if self.mera_id - 1 >= 1:
+                self.mera_id -= 1
+                self.Mera_number_lineEdit.setText(str(self.mera_id))
+                self.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera_id - 1]))
         print("click minus mera_num\r\n")
 
     def minus_white_led(self):
@@ -603,10 +620,26 @@ class CameraApp(QMainWindow):
             self.camera.start()
         print("click minus exposition\r\n")
 
+    def add_mera(self):
+        self.mera.add_mera(np.random.randint(0, 255), np.random.randint(0, 100))
+        if self.mera_id is None:
+            self.mera_id = 1
+            self.Mera_number_lineEdit.setText(str(self.mera_id))
+            self.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera_id - 1]))
+        else:
+            self.mera_id += 1
+            self.Mera_number_lineEdit.setText(str(self.mera_id))
+            self.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera_id - 1]))
+
     def plus_nominal(self):
         print("click plus nominal\r\n")
 
     def plus_mera_num(self):
+        if len(self.mera) > 0:
+            if self.mera_id + 1 <= len(self.mera):
+                self.mera_id += 1
+                self.Mera_number_lineEdit.setText(str(self.mera_id))
+                self.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera_id - 1]))
         print("click mera_num\r\n")
 
     def plus_white_led(self):
