@@ -240,21 +240,26 @@ class CameraApp(QMainWindow):
         self.User_tab = QtWidgets.QWidget()
         self.User_tab.setObjectName("User_tab")
         self.User_settings_image_toolBox = QtWidgets.QToolBox(self.User_tab)
-        self.User_settings_image_toolBox.setGeometry(QtCore.QRect(8, 12, 381, 371))
+        self.User_settings_image_toolBox.setGeometry(QtCore.QRect(8, 12, 381, 250))
         self.User_settings_image_toolBox.setObjectName("User_settings_image_toolBox")
         self.page = QtWidgets.QWidget()
         self.page.setGeometry(QtCore.QRect(0, 0, 381, 335))
         self.page.setObjectName("page")
         self.Capture_image_checkBox = QtWidgets.QCheckBox(self.page)
-        self.Capture_image_checkBox.setGeometry(QtCore.QRect(30, 120, 310, 50))
+        self.Capture_image_checkBox.setGeometry(QtCore.QRect(30, 20, 310, 50))
         self.Capture_image_checkBox.setObjectName("Capture_image_checkBox")
         self.EN_Hist_checkBox = QtWidgets.QCheckBox(self.page)
-        self.EN_Hist_checkBox.setGeometry(QtCore.QRect(30, 190, 310, 50))
+        self.EN_Hist_checkBox.setGeometry(QtCore.QRect(30, 50, 310, 50))
         self.EN_Hist_checkBox.setObjectName("EN_Hist_checkBox")
         self.Apply_capture_image_pushButton = QtWidgets.QPushButton(self.page)
-        self.Apply_capture_image_pushButton.setGeometry(QtCore.QRect(100, 270, 180, 50))
+        self.Apply_capture_image_pushButton.setGeometry(QtCore.QRect(100, 120, 180, 50))
         self.Apply_capture_image_pushButton.setObjectName("Apply_capture_image_pushButton")
+
+        self.page_base_calibr = QtWidgets.QWidget()
+        self.page_base_calibr.setObjectName("page_base_calibr")
         self.User_settings_image_toolBox.addItem(self.page, "")
+        self.User_settings_image_toolBox.addItem(self.page_base_calibr, '')
+
         self.Control_tabWidget.addTab(self.User_tab, "Пользовательские")
         self.tab_service = QtWidgets.QWidget()
         self.tab_service.setObjectName("tab_service")
@@ -338,8 +343,7 @@ class CameraApp(QMainWindow):
         self.Exposition_2_label.setGeometry(QtCore.QRect(0, 120, 47, 13))
         self.Exposition_2_label.setObjectName("Exposition_2_label")
         self.toolBox.addItem(self.page_cam, "")
-        self.page_base_calibr = QtWidgets.QWidget()
-        self.page_base_calibr.setObjectName("page_base_calibr")
+
         self.recovery_settings_pushButton = QtWidgets.QPushButton(self.page_base_calibr)
         self.recovery_settings_pushButton.setGeometry(QtCore.QRect(110, 100, 150, 50))
         self.recovery_settings_pushButton.setObjectName("recovery_settings_pushButton")
@@ -349,7 +353,6 @@ class CameraApp(QMainWindow):
         self.Calibrate_success_label.setScaledContents(False)
         self.Calibrate_success_label.setWordWrap(False)
         self.Calibrate_success_label.setObjectName("Calibrate_success_label")
-        self.toolBox.addItem(self.page_base_calibr, "")
         self.Control_tabWidget.addTab(self.tab_service, "Сервисные")
         self.verticalLayout.addWidget(self.Control_tabWidget)
         self.tabWidget.addTab(self.Control_page, "")
@@ -375,7 +378,7 @@ class CameraApp(QMainWindow):
         self.Nominal_minus_pushButton.setText(_translate("Widget", "-"))
         self.Mera_number_minus_pushButton.setText(_translate("Widget", "-"))
         self.Text_calibrate_page_label.setText(_translate("Widget", "Всего мер "))
-        self.Mera_num_max_label.setText(_translate("Widget", "1/4"))
+        self.Mera_num_max_label.setText(_translate("Widget", "0"))
         self.Mera_push_pushButton.setText(_translate("Widget", "Добавить меру"))
         self.Mera_delete_pushButton.setText(_translate("Widget", "Удалить меру"))
         self.Calibrate_start_pushButton.setText(_translate("Widget", "Калибровать"))
@@ -406,8 +409,8 @@ class CameraApp(QMainWindow):
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_cam), _translate("Widget", "Параметры камеры"))
         self.recovery_settings_pushButton.setText(_translate("Widget", "Восстановить"))
         self.Calibrate_success_label.setText(_translate("Widget", "Калибровка успешно восстановлена"))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_base_calibr),
-                                 _translate("Widget", "Восстановить заводскую калибровку"))
+        self.User_settings_image_toolBox.setItemText(self.User_settings_image_toolBox.indexOf(self.page_base_calibr),
+                                                     _translate("Widget", "Восстановить заводскую калибровку"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Control_page), _translate("Widget", "Настройки"))
 
     def __init__(self):
@@ -470,6 +473,7 @@ class CameraApp(QMainWindow):
         self.Nominal_minus_pushButton.clicked.connect(self.minus_nominal)
         self.Nominal_plus_pushButton.clicked.connect(self.plus_nominal)
         self.Mera_push_pushButton.clicked.connect(self.add_mera)
+        self.Mera_delete_pushButton.clicked.connect(self.delete_mera)
         self.Mera_number_minus_pushButton.clicked.connect(self.minus_mera_num)
         self.Mera_number_plus_pushButton.clicked.connect(self.plus_mera_num)
         self.White_LED_minus_pushButton.clicked.connect(self.minus_white_led)
@@ -478,6 +482,7 @@ class CameraApp(QMainWindow):
         self.IR_LED_plus_pushButton.clicked.connect(self.plus_ir_led)
         self.Exposition_minus_pushButton.clicked.connect(self.minus_exposition)
         self.Exposition_plus_pushButton.clicked.connect(self.plus_exposition)
+
 
     def update_frame(self):
         if (__RPI__ == True):
@@ -533,11 +538,8 @@ class CameraApp(QMainWindow):
             # display contrast on display
             if (result_proc["contrast"] != None):
                 self.Contrast_Label.setText("{0:3.3f}".format(result_proc["contrast"]))
-                # self.Black_level_label.setText("{0:3.3f}".format(result_proc["avg_numbers"]))
-                # self.White_level_label.setText("{0:3.3f}".format(result_proc["avg_paper"]))
             # create Qimage
             self.qimage = QImage(res3, 360, 480, 360 * 3, QImage.Format_RGB888)
-            # self.qimage2 = QImage(crop_img2,384,192, 384, QImage.Format_Indexed8)
             self.qimage2 = QImage(result_proc["histogram"], 384, 192, 384 * 3, QImage.Format_RGB888)
             # display images
             self.Img_label.setPixmap(QPixmap.fromImage(self.qimage))
@@ -630,6 +632,29 @@ class CameraApp(QMainWindow):
             self.mera_id += 1
             self.Mera_number_lineEdit.setText(str(self.mera_id))
             self.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera_id - 1]))
+        _translate = QtCore.QCoreApplication.translate
+        self.Mera_num_max_label.setText(_translate("Widget", str(len(self.mera))))
+
+    def delete_mera(self):
+        if self.mera_id is None:
+            pass
+        else:
+            self.mera.delete_mera(self.mera_id - 1)
+            if len(self.mera) == 0:
+                self.mera_id = None
+                self.Nominal_lineEdit.setText('')
+                self.Mera_number_lineEdit.setText('')
+            elif self.mera_id > len(self.mera):
+                self.mera_id = len(self.mera)
+                self.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera_id - 1]))
+                self.Mera_number_lineEdit.setText(str(self.mera_id))
+            else:
+                if self.mera_id != 1:
+                    self.mera_id -= 1
+                self.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera_id - 1]))
+                self.Mera_number_lineEdit.setText(str(self.mera_id))
+        _translate = QtCore.QCoreApplication.translate
+        self.Mera_num_max_label.setText(_translate("Widget", str(len(self.mera))))
 
     def plus_nominal(self):
         print("click plus nominal\r\n")
