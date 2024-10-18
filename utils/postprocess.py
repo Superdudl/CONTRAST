@@ -18,3 +18,21 @@ def histogram(img):
                  (x + int(hist_w / bins / 2) - 1, int(0.95 * hist_h - a[i])), [255, 255, 255], int(hist_w / bins - 2))
 
     return histogram
+
+
+def calc_contrast(img):
+    # Определение маски для цифр и бумаги
+    numbers_mask = (img >= 50) & (img <= 120)
+    paper_mask = (img >= 200) & (img <= 240)
+
+    avg_numbers = np.mean(img[numbers_mask]) if np.any(numbers_mask) else None
+    avg_paper = np.mean(img[paper_mask]) if np.any(paper_mask) else None
+    contrast = avg_paper / avg_numbers if avg_numbers is not None and avg_paper is not None else None
+
+    return {
+        'avg_numbers': avg_numbers,
+        'avg_paper': avg_paper,
+        'contrast': contrast,
+        'paper_mask': paper_mask.astype(np.uint8) * 255,
+        'numbers_mask': numbers_mask.astype(np.uint8) * 255
+    }

@@ -1,0 +1,7 @@
+{
+  "AnalogueGain": 1.0,
+  "ExposureTime": 5e3,
+  "AeEnable": false,
+  "AwbEnable": false,
+  "NoiseReductionMode": false
+}
