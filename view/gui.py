@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import QMainWindow
 __PC__ = True
 __RPI__ = False
 
+from fontTools.voltLib.ast import SettingDefinition
+
 
 class CameraApp(QMainWindow):
 
@@ -35,6 +37,8 @@ class CameraApp(QMainWindow):
         self.tabWidget.setObjectName("tabWidget")
         self.Measure_page = QtWidgets.QWidget()
         self.Measure_page.setObjectName("Measure_page")
+
+        # Гистограмма
         self.Hist_Label = QtWidgets.QLabel(self.Measure_page)
         self.Hist_Label.setGeometry(QtCore.QRect(10, 10, 384, 192))
         self.Hist_Label.setMinimumSize(QtCore.QSize(384, 192))
@@ -43,13 +47,19 @@ class CameraApp(QMainWindow):
         self.Hist_Label.setText("")
         self.Hist_Label.setScaledContents(False)
         self.Hist_Label.setObjectName("Hist_Label")
+        self.Hist_Label.hide()
+
+        # Значение контраста
         self.Contrast_Label = QtWidgets.QLabel(self.Measure_page)
-        self.Contrast_Label.setGeometry(QtCore.QRect(150, 240, 131, 81))
+        self.Contrast_Label.setGeometry(QtCore.QRect(50, 130, 300, 120))
         font = QtGui.QFont()
-        font.setPointSize(36)
+        font.setPointSize(100)
         self.Contrast_Label.setFont(font)
         self.Contrast_Label.setText("0.00")
         self.Contrast_Label.setObjectName("Contrast_Label")
+        self.Contrast_Label.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Кнопка измерить во вкладке измерения
         self.Measure_pushButton = QtWidgets.QPushButton(self.Measure_page)
         self.Measure_pushButton.setEnabled(True)
         self.Measure_pushButton.setGeometry(QtCore.QRect(10, 362, 371, 61))
@@ -60,6 +70,7 @@ class CameraApp(QMainWindow):
         self.Measure_pushButton.setIconSize(QtCore.QSize(21, 16))
         self.Measure_pushButton.setObjectName("Measure_pushButton")
         self.tabWidget.addTab(self.Measure_page, "")
+
         self.Calibration_page = QtWidgets.QWidget()
         self.Calibration_page.setObjectName("Calibration_page")
 
@@ -175,18 +186,22 @@ class CameraApp(QMainWindow):
         self.Control_tabWidget.setObjectName("Control_tabWidget")
         self.User_tab = QtWidgets.QWidget()
         self.User_tab.setObjectName("User_tab")
+
         self.User_settings_image_toolBox = QtWidgets.QToolBox(self.User_tab)
         self.User_settings_image_toolBox.setGeometry(QtCore.QRect(8, 12, 381, 250))
         self.User_settings_image_toolBox.setObjectName("User_settings_image_toolBox")
+
         self.page = QtWidgets.QWidget()
         self.page.setGeometry(QtCore.QRect(0, 0, 381, 335))
         self.page.setObjectName("page")
+
         self.Capture_image_checkBox = QtWidgets.QCheckBox(self.page)
         self.Capture_image_checkBox.setGeometry(QtCore.QRect(30, 20, 310, 50))
         self.Capture_image_checkBox.setObjectName("Capture_image_checkBox")
         self.EN_Hist_checkBox = QtWidgets.QCheckBox(self.page)
         self.EN_Hist_checkBox.setGeometry(QtCore.QRect(30, 50, 310, 50))
         self.EN_Hist_checkBox.setObjectName("EN_Hist_checkBox")
+
         self.Apply_capture_image_pushButton = QtWidgets.QPushButton(self.page)
         self.Apply_capture_image_pushButton.setGeometry(QtCore.QRect(100, 120, 180, 50))
         self.Apply_capture_image_pushButton.setObjectName("Apply_capture_image_pushButton")
