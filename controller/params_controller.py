@@ -1,9 +1,6 @@
 import platform
 from PyQt5.QtCore import QObject
 from PyQt5 import QtGui, QtCore
-from fontTools.ttLib.tables.E_B_L_C_ import eblc_index_sub_table_4, eblc_index_sub_table_3
-
-from tst_picam_12_10_1 import time_exposition
 
 
 class ParamsController(QObject):
