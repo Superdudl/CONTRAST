@@ -1,5 +1,5 @@
 {
-  "AnalogueGain": 1.0,
+  "AnalogueGain": 5,
   "ExposureTime": 5e3,
   "AeEnable": false,
   "AwbEnable": false,

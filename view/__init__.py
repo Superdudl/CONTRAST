@@ -1,1 +1,1 @@
-from .gui import CameraApp
+from .gui import CameraApp as CameraApp2

@@ -31,7 +31,7 @@ def histogram(img):
 
     for i, x in enumerate(range(0, histogram.shape[1], int(hist_w / bins))):
         cv2.line(histogram, (x + int(hist_w / bins / 2), hist_h),
-                 (x + int(hist_w / bins / 2), int(0.95 * hist_h - a[i])), [255, 255, 255], int(hist_w / bins - 2))
+                 (x + int(hist_w / bins / 2), int(hist_h - a[i])), [255, 255, 255], int(hist_w / bins - 2))
 
     t1 = time.time()
     print(f'Time: {t1 - t0:.6}')

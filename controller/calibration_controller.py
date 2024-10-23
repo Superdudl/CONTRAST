@@ -20,14 +20,15 @@ class CalibrationController(QObject):
         self.view.Mera_number_plus_pushButton.clicked.connect(self.plus_mera_num)
 
     def add_mera(self):
-        self.mera.add_mera(np.random.randint(0, 255), 50)
+        self.mera.add_mera(np.random.randint(0, 255), np.random.randint(0, 100))
         self.view.Mera_number_lineEdit.setText(str(self.mera.id))
         self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]))
         _translate = QtCore.QCoreApplication.translate
         self.view.Mera_num_max_label.setText(_translate("Widget", str(len(self.mera))))
 
     def delete_mera(self):
-        self.mera.delete_mera(self.mera.id - 1)
+        if self.mera.id is not None:
+            self.mera.delete_mera(self.mera.id - 1)
         if self.mera.id is None:
             self.view.Nominal_lineEdit.setText('')
             self.view.Mera_number_lineEdit.setText('')
@@ -38,14 +39,16 @@ class CalibrationController(QObject):
         self.view.Mera_num_max_label.setText(_translate("Widget", str(len(self.mera))))
 
     def minus_nominal(self):
-        if self.mera.nominal_value[self.mera.id - 1] > 0:
-            self.mera.nominal_value[self.mera.id - 1] -= 1
-            self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]))
+        if self.mera.id is not None:
+            if self.mera.nominal_value[self.mera.id - 1] > 0:
+                self.mera.nominal_value[self.mera.id - 1] -= 1
+                self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]))
 
     def plus_nominal(self):
-        if self.mera.nominal_value[self.mera.id - 1] < 100:
-            self.mera.nominal_value[self.mera.id - 1] += 1
-            self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]))
+        if self.mera.id is not None:
+            if self.mera.nominal_value[self.mera.id - 1] < 100:
+                self.mera.nominal_value[self.mera.id - 1] += 1
+                self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]))
 
     def minus_mera_num(self):
         if len(self.mera) > 0:
