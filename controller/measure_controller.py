@@ -19,7 +19,7 @@ class MeasureController(QObject):
         self.timer.timeout.connect(self.calc_hist)
         self.timer.start(100)
 
-        # Кнопка измерить
+        # Измерение
         self.view.Measure_pushButton.clicked.connect(self.calc_contrast)
 
     def calc_hist(self):
@@ -30,11 +30,19 @@ class MeasureController(QObject):
 
     def calc_contrast(self):
         self.video_cap.timer.stop()
-        frame_prewiew = self.video_cap.frame_prewiew
+        frame_prewiew = self.video_cap.frame_preview
         rect = np.zeros_like(frame_prewiew)
         rect = cv2.rectangle(rect, [0, 0], [rect.shape[1], rect.shape[0]], color=(255, 0, 0), thickness=20)
         qimage = QImage(cv2.addWeighted(frame_prewiew, 0.5, rect, 0.5, gamma=1.0), 360, 480, 360 * 3, QImage.Format_RGB888)
         self.view.Img_label.setPixmap(QPixmap.fromImage(qimage))
         res = calc_contrast(self.video_cap.frame_bw)
-        self.view.Contrast_Label.setText(f'{res["contrast"]:.2f}')
+        if res["contrast"] is not None:
+            self.view.Contrast_Label.setText(f'{res["contrast"]:.2f}')
         self.video_cap.timer.start()
+
+    def motion_detector(self):
+        if self.video_cap.prev_frame is not None:
+            mse = np.square(np.subtract(self.video_cap.frame_preview, self.video_cap.prev_frame)).mean()
+            if mse < 10:
+                self.calc_contrast()
+

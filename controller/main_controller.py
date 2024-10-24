@@ -11,5 +11,5 @@ class MainController(QObject):
     def connect_controllers(self):
         self.calibration_controller = CalibrationController(self.view)
         self.video_capture = VideoCapture(self.view)
-        self.params_controller = ParamsController(self.view, self.video_capture)
         self.measure_controller = MeasureController(self.view, self.video_capture)
+        self.params_controller = ParamsController(self.view, self.video_capture, self.measure_controller)
