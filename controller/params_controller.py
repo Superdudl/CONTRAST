@@ -9,17 +9,19 @@ class ParamsController(QObject):
         self.view = view
         self.video_cap = video_cap
         self.setupUI()
+        self.time_exposition = self.video_cap.camera.capture_metadata()['ExposureTime'] + 1
+        self.view.Exposition_lineEdit.setText(str(int(self.time_exposition // 1000)))
 
     def setupUI(self):
-        # Параметры захвата изображения
+        # ????????? ??????? ???????????
         self.view.Apply_capture_image_pushButton.clicked.connect(self.apply_img_capture_params)
 
-        # Выдержка
+        # ????????
         self.view.Exposition_minus_pushButton.clicked.connect(self.minus_exposition)
         self.view.Exposition_plus_pushButton.clicked.connect(self.plus_exposition)
         self.view.Exposition_Apply_pushButton.clicked.connect(self.apply_exposition)
 
-        # Окно изменения настройки
+        # ???? ????????? ?????????
         self.view.listWidget.currentRowChanged['int'].connect(self.show_params_window_user)
         self.view.listWidget_2.currentRowChanged['int'].connect(self.show_params_window_service)
 
@@ -48,8 +50,7 @@ class ParamsController(QObject):
     def plus_exposition(self):
         if platform.system() == 'Windows':
             self.time_exposition = 5e4
-        else:
-            self.time_exposition = int(self.video_cap.camera.capture_metadata()['ExposureTime'])
+
         if self.time_exposition + 5e3 <= 1e5:
             self.time_exposition += 5e3
         self.view.Exposition_lineEdit.setText(str(int(self.time_exposition // 1000)))
@@ -57,12 +58,10 @@ class ParamsController(QObject):
     def minus_exposition(self):
         if platform.system() == 'Windows':
             self.time_exposition = 5e4
-        else:
-            self.time_exposition = int(self.video_cap.camera.capture_metadata()['ExposureTime'])
         if self.time_exposition - 5e3 >= 0:
             self.time_exposition -= 5e3
         self.view.Exposition_lineEdit.setText(str(int(self.time_exposition // 1000)))
 
     def apply_exposition(self):
         if platform.system() != 'Windows':
-            self.camera.set_controls({'ExposureTime': self.time_exposition})
+            self.video_cap.camera.set_controls({'ExposureTime': int(self.time_exposition)})
