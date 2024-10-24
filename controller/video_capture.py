@@ -17,7 +17,7 @@ class VideoCapture(QObject):
             from picamera2.controls import Controls
             import pigpio
 
-            tuning = Picamera2.load_tuning_file(str(PurePath(Path.cwd().parent, "src", "imx219.json")))
+            tuning = Picamera2.load_tuning_file(str(PurePath(Path(__file__).parent.parent, "src", "imx219.json")))
 
             self.camera = Picamera2(tuning=tuning)
             self.h, self.w = 1536, 2048
@@ -26,7 +26,7 @@ class VideoCapture(QObject):
                 buffer_count=4)
             self.camera.configure(config)
 
-            with open(str(PurePath(Path.cwd().parent, 'src', 'camera_config.json')), 'r') as json_file:
+            with open(str(PurePath(Path(__file__).parent.parent, 'src', 'camera_config.json')), 'r') as json_file:
                 self.ctrls = json.load(json_file)
                 self.ctrls['AnalogueGain'] = int(self.ctrls['AnalogueGain'])
                 self.ctrls['ExposureTime'] = int(self.ctrls['ExposureTime'])
@@ -52,7 +52,7 @@ class VideoCapture(QObject):
             self.frame = self.camera.capture_array('main')
             self.frame = cv2.cvtColor(self.frame, cv2.COLOR_YUV420p2BGR)
             self.frame_prewiew = cv2.resize(self.frame, (480, 360))
-            self.frame_prewiew = cv2.rotate(self.frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            self.frame_prewiew = cv2.rotate(self.frame_prewiew, cv2.ROTATE_90_COUNTERCLOCKWISE)
             self.frame_bw = cv2.cvtColor(self.frame, cv2.COLOR_RGB2GRAY)
 
         self.qimage = QImage(self.frame_prewiew, 360, 480, 360 * 3, QImage.Format_RGB888)

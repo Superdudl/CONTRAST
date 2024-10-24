@@ -1,6 +1,6 @@
 {
-  "AnalogueGain": 5,
-  "ExposureTime": 5e3,
+  "AnalogueGain": 1,
+  "ExposureTime": 5e4,
   "AeEnable": false,
   "AwbEnable": false,
   "NoiseReductionMode": false
