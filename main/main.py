@@ -1,13 +1,14 @@
 from PyQt5.QtWidgets import QApplication
 import sys
 from pathlib import Path
-sys.path.append("..")
+
+sys.path.append(Path.cwd().parent)
 from view import CameraApp2
 from controller import MainController
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    app.setStyleSheet(Path('../view/styleSheet.qss').read_text())
+    app.setStyleSheet(Path(Path.cwd().parent / 'view' / 'styleSheet.qss').read_text())
     ex = CameraApp2()
     main_controller = MainController(ex)
     ex.show()

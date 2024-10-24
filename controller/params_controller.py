@@ -9,7 +9,10 @@ class ParamsController(QObject):
         self.view = view
         self.video_cap = video_cap
         self.setupUI()
-        self.time_exposition = self.video_cap.camera.capture_metadata()['ExposureTime'] + 1
+        if platform.system() != 'Windows':
+            self.time_exposition = self.video_cap.camera.capture_metadata()['ExposureTime'] + 1
+        else:
+            self.time_exposition = 5e4
         self.view.Exposition_lineEdit.setText(str(int(self.time_exposition // 1000)))
 
     def setupUI(self):
@@ -48,16 +51,11 @@ class ParamsController(QObject):
             self.view.Contrast_Label.setFont(font)
 
     def plus_exposition(self):
-        if platform.system() == 'Windows':
-            self.time_exposition = 5e4
-
         if self.time_exposition + 5e3 <= 1e5:
             self.time_exposition += 5e3
         self.view.Exposition_lineEdit.setText(str(int(self.time_exposition // 1000)))
 
     def minus_exposition(self):
-        if platform.system() == 'Windows':
-            self.time_exposition = 5e4
         if self.time_exposition - 5e3 >= 0:
             self.time_exposition -= 5e3
         self.view.Exposition_lineEdit.setText(str(int(self.time_exposition // 1000)))

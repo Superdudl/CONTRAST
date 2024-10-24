@@ -4,6 +4,7 @@ from PyQt5.QtCore import QTimer, QObject
 from PyQt5.QtGui import QImage, QPixmap
 import platform
 import json
+from pathlib import Path
 
 
 class VideoCapture(QObject):
@@ -16,7 +17,7 @@ class VideoCapture(QObject):
             from picamera2.controls import Controls
             import pigpio
 
-            tuning = Picamera2.load_tuning_file(r"./src/imx219.json")
+            tuning = Picamera2.load_tuning_file(Path.cwd().parent / "src" / "imx219.json")
 
             self.camera = Picamera2(tuning=tuning)
             self.h, self.w = 1536, 2048
@@ -25,7 +26,7 @@ class VideoCapture(QObject):
                 buffer_count=4)
             self.camera.configure(config)
 
-            with open(r'./src/camera_config.json', 'r') as json_file:
+            with open(Path.cwd().parent / 'src' / 'camera_config.json', 'r') as json_file:
                 self.ctrls = json.load(json_file)
                 self.ctrls['AnalogueGain'] = int(self.ctrls['AnalogueGain'])
                 self.ctrls['ExposureTime'] = int(self.ctrls['ExposureTime'])
