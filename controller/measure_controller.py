@@ -42,7 +42,15 @@ class MeasureController(QObject):
 
     def motion_detector(self):
         if self.video_cap.prev_frame is not None:
-            mse = np.square(np.subtract(self.video_cap.frame_preview, self.video_cap.prev_frame)).mean()
-            if mse < 10:
+            curr = cv2.cvtColor(self.video_cap.frame_preview, cv2.COLOR_RGB2GRAY)
+            curr = cv2.GaussianBlur(curr, (21, 21), 3)
+
+            try:
+                prev = cv2.cvtColor(self.video_cap.prev_frame, cv2.COLOR_RGB2GRAY)
+                prev = cv2.GaussianBlur(prev, (21, 21), 3)
+            except cv2.error as e:
+                prev = np.zeros_like(curr)
+            diff = cv2.absdiff(prev, curr)
+            if diff[diff < 2] / len(diff) > 0.995:
                 self.calc_contrast()
 
