@@ -18,7 +18,7 @@ class CameraApp(QMainWindow):
         self.setupUi(self)
 
     def setupUi(self, Widget):
-        Widget.setObjectName("Widget")
+        Widget.setObjectName("C")
         Widget.resize(800, 480)
         Widget.setMaximumSize(QtCore.QSize(800, 480))
         Widget.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
@@ -194,10 +194,6 @@ class CameraApp(QMainWindow):
         font.setFamily("Times New Roman")
         font.setPointSize(14)
         self.listWidget.setFont(font)
-        self.listWidget.setStyleSheet("QListWidget::item{\n"
-                                      "    padding: 3px;\n"
-                                      "    margin-bottom: 2px;\n"
-                                      "}")
         self.listWidget.setObjectName("listWidget")
         item = QtWidgets.QListWidgetItem()
         self.listWidget.addItem(item)
@@ -239,10 +235,6 @@ class CameraApp(QMainWindow):
         font.setFamily("Times New Roman")
         font.setPointSize(14)
         self.listWidget_2.setFont(font)
-        self.listWidget_2.setStyleSheet("QListWidget::item{\n"
-                                        "    padding: 3px;\n"
-                                        "    margin-bottom: 2px;\n"
-                                        "}")
         self.listWidget_2.setObjectName("listWidget_2")
         item = QtWidgets.QListWidgetItem()
         self.listWidget_2.addItem(item)
@@ -339,7 +331,7 @@ class CameraApp(QMainWindow):
 
     def retranslateUi(self, Widget):
         _translate = QtCore.QCoreApplication.translate
-        Widget.setWindowTitle(_translate("Widget", "Widget"))
+        Widget.setWindowTitle(_translate("Widget", "Контрастометр"))
         self.Measure_pushButton.setText(_translate("Widget", "Измерение"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Measure_page), _translate("Widget", "Измерения"))
         self.Mera_number_label.setText(_translate("Widget", "Номер меры"))
