@@ -10,6 +10,7 @@ class CalibrationController(QObject):
         self.view = view
         self.setupUI(self.view)
         self.mera = Mera()
+        self.update_plot()
 
     def setupUI(self, view):
         self.view.Nominal_minus_pushButton.clicked.connect(self.minus_nominal)
@@ -63,3 +64,8 @@ class CalibrationController(QObject):
                 self.mera.id += 1
                 self.view.Mera_number_lineEdit.setText(str(self.mera.id))
                 self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]))
+
+    def update_plot(self):
+        self.view.canvas.axes.cla()
+        self.view.canvas.axes.plot([0,1,2,3,4], [1, 1, 1, 1, 1])
+        self.view.canvas.draw()

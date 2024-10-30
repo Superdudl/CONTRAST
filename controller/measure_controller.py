@@ -1,9 +1,24 @@
-from PyQt5.QtCore import QObject, QTimer
+from PyQt5.QtCore import QObject, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
 from utils import histogram, calc_contrast
 import numpy as np
 import cv2
-import time
+
+
+class WorkerThread(QThread):
+    finished_signal = pyqtSignal()
+    def __init__(self, video_cap, view):
+        super().__init__()
+        self.video_cap = video_cap
+        self.view = view
+
+    def run(self):
+        x1, y1 = self.video_cap.crosshair[0][0], self.video_cap.crosshair[0][1]
+        x2, y2 = self.video_cap.crosshair[1][0], self.video_cap.crosshair[1][1]
+        res = calc_contrast(self.video_cap.frame_bw[x1:x2, y1:y2])
+        if res["contrast"] is not None:
+            self.view.Contrast_Label.setText(f'{res["contrast"]:.2f}'.replace('.', ','))
+        self.finished_signal.emit()
 
 
 class MeasureController(QObject):
@@ -29,16 +44,19 @@ class MeasureController(QObject):
         self.view.Hist_Label.setPixmap(QPixmap.fromImage(self.qimage))
 
     def calc_contrast(self):
+        def start_timer():
+            self.video_cap.timer.start()
+
         self.video_cap.timer.stop()
+        self.worker = WorkerThread(self.video_cap, self.view)
+        self.worker.finished_signal.connect(start_timer)
+        self.worker.start()
         frame_prewiew = self.video_cap.frame_preview
         rect = np.zeros_like(frame_prewiew)
         rect = cv2.rectangle(rect, [0, 0], [rect.shape[1], rect.shape[0]], color=(255, 0, 0), thickness=20)
-        qimage = QImage(cv2.addWeighted(frame_prewiew, 0.5, rect, 0.5, gamma=1.0), 360, 480, 360 * 3, QImage.Format_RGB888)
+        qimage = QImage(cv2.addWeighted(frame_prewiew, 0.5, rect, 0.5, gamma=1.0), 360, 480, 360 * 3,
+                        QImage.Format_RGB888)
         self.view.Img_label.setPixmap(QPixmap.fromImage(qimage))
-        res = calc_contrast(self.video_cap.frame_bw)
-        if res["contrast"] is not None:
-            self.view.Contrast_Label.setText(f'{res["contrast"]:.2f}')
-        self.video_cap.timer.start()
 
     def motion_detector(self):
         if self.video_cap.prev_frame is not None:
@@ -53,4 +71,3 @@ class MeasureController(QObject):
             diff = cv2.absdiff(prev, curr)
             if diff[diff < 2] / len(diff) > 0.995:
                 self.calc_contrast()
-

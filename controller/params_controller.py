@@ -26,27 +26,27 @@ class ParamsController(QObject):
         self.view.Exposition_Apply_pushButton.clicked.connect(self.apply_exposition)
 
         # Настройка списка настроек
-        self.view.listWidget.currentRowChanged['int'].connect(self.show_params_window_user)
-        self.view.listWidget_2.currentRowChanged['int'].connect(self.show_params_window_service)
+        self.view.listWidget.itemClicked.connect(self.show_params_window_user)
+        self.view.listWidget_2.itemClicked.connect(self.show_params_window_service)
 
-    def show_params_window_user(self, index):
-        self.view.stackedWidget.setCurrentIndex(index)
-        self.view.stackedWidget.show()
+    def show_params_window_user(self, item):
+        index = self.view.listWidget.row(item)
+        self.view.stackedWidget.setCurrentIndex(index + 1)
 
-    def show_params_window_service(self, index):
-        self.view.stackedWidget_2.setCurrentIndex(index)
-        self.view.stackedWidget_2.show()
+    def show_params_window_service(self, item):
+        index = self.view.listWidget_2.row(item)
+        self.view.stackedWidget_2.setCurrentIndex(index + 1)
 
     def apply_img_capture_params(self):
         if self.view.EN_Hist_checkBox.isChecked():
-            self.view.Hist_Label.show()
-            self.view.Contrast_Label.setGeometry(QtCore.QRect(50, 240, 300, 120))
+            self.view.Hist_Widget.show()
+            self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 220, 300, 140))
             font = QtGui.QFont()
             font.setPointSize(30)
             self.view.Contrast_Label.setFont(font)
         else:
-            self.view.Hist_Label.hide()
-            self.view.Contrast_Label.setGeometry(QtCore.QRect(50, 130, 300, 120))
+            self.view.Hist_Widget.hide()
+            self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 130, 300, 120))
             font = QtGui.QFont()
             font.setPointSize(100)
             self.view.Contrast_Label.setFont(font)

@@ -42,23 +42,26 @@ class VideoCapture(QObject):
         self.frame = None
         self.prev_frame = None
         self.frame_preview = None
+        self.crosshair = ((135, 585), (1935, 945))
         self.update_frame()
 
     def update_frame(self):
         if platform.system() == 'Windows':
             self.prev_frame = self.frame_preview
-            # self.frame = np.random.randint(0, 255, (2048, 1536, 3), dtype=np.uint8)
-            self.frame = np.ones(shape=(2048, 1536, 3), dtype=np.uint8)
-            self.frame_preview = cv2.resize(self.frame, (480, 360))
-            self.frame_preview = cv2.rotate(self.frame_preview, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            self.frame = np.random.randint(0, 255, (1536, 2048, 3), dtype=np.uint8)
             self.frame_bw = cv2.cvtColor(self.frame, cv2.COLOR_RGB2GRAY)
+            frame = cv2.rectangle(self.frame, self.crosshair[0], self.crosshair[1], (255, 255, 255), 10)
+            # self.frame = np.random.randint(0, 1, (480, 360, 3), dtype=np.uint8)
+            self.frame_preview = cv2.resize(frame, (480, 360))
+            self.frame_preview = cv2.rotate(self.frame_preview, cv2.ROTATE_90_COUNTERCLOCKWISE)
         else:
             self.prev_frame = self.frame_preview
             self.frame = self.camera.capture_array('main')
             self.frame = cv2.cvtColor(self.frame, cv2.COLOR_YUV420p2BGR)
-            self.frame_preview = cv2.resize(self.frame, (480, 360))
-            self.frame_preview = cv2.rotate(self.frame_preview, cv2.ROTATE_90_COUNTERCLOCKWISE)
             self.frame_bw = cv2.cvtColor(self.frame, cv2.COLOR_RGB2GRAY)
+            frame = cv2.rectangle(self.frame, self.crosshair[0], self.crosshair[1], (255, 255, 255), 10)
+            self.frame_preview = cv2.resize(frame, (480, 360))
+            self.frame_preview = cv2.rotate(self.frame_preview, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
         self.qimage = QImage(self.frame_preview, 360, 480, 360 * 3, QImage.Format_RGB888)
         self.view.Img_label.setPixmap(QPixmap.fromImage(self.qimage))

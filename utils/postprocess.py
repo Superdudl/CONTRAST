@@ -6,7 +6,7 @@ def histogram(img):
     # Вычисление гистограммы
     bins = 64
     a = cv2.calcHist([img], [0], None, [bins], ranges=(0, 256)).ravel()
-
+    a = np.where(a > 0, np.log(a), a)
     hist_w = 384
     hist_h = 192
     a = np.uint(0.85 * hist_h * (a / np.max(a)))
@@ -22,8 +22,11 @@ def histogram(img):
 
 def calc_contrast(img):
     # Определение маски для цифр и бумаги
-    numbers_mask = (img >= 50) & (img <= 120)
-    paper_mask = (img >= 200) & (img <= 240)
+    # numbers_mask = (img >= 50) & (img <= 120)
+    # paper_mask = (img >= 200) & (img <= 240)
+
+    numbers_mask = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    paper_mask = ~numbers_mask[1]
 
     avg_numbers = np.mean(img[numbers_mask]) if np.any(numbers_mask) else None
     avg_paper = np.mean(img[paper_mask]) if np.any(paper_mask) else None
