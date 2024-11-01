@@ -24,12 +24,14 @@ def calc_contrast(img):
     # Определение маски для цифр и бумаги
     # numbers_mask = (img >= 50) & (img <= 120)
     # paper_mask = (img >= 200) & (img <= 240)
+    img_shape = img.shape
+    numbers_mask = cv2.threshold(img, 127, 1, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+    paper_mask = 1 - numbers_mask
+    res = np.concatenate((img*paper_mask, img*numbers_mask), axis=1)
+    cv2.imwrite('masks.png', res)
 
-    numbers_mask = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-    paper_mask = ~numbers_mask[1]
-
-    avg_numbers = np.mean(img[numbers_mask]) if np.any(numbers_mask) else None
-    avg_paper = np.mean(img[paper_mask]) if np.any(paper_mask) else None
+    avg_numbers = np.mean(img*numbers_mask) if np.any(numbers_mask) else None
+    avg_paper = np.mean(img*paper_mask) if np.any(paper_mask) else None
     contrast = avg_paper / avg_numbers if avg_numbers is not None and avg_paper is not None else None
 
     return {

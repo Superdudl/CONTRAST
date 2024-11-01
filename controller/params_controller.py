@@ -46,7 +46,7 @@ class ParamsController(QObject):
             self.view.Contrast_Label.setFont(font)
         else:
             self.view.Hist_Widget.hide()
-            self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 130, 300, 120))
+            self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 130, 300, 140))
             font = QtGui.QFont()
             font.setPointSize(100)
             self.view.Contrast_Label.setFont(font)

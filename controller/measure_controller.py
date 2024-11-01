@@ -15,7 +15,7 @@ class WorkerThread(QThread):
     def run(self):
         x1, y1 = self.video_cap.crosshair[0][0], self.video_cap.crosshair[0][1]
         x2, y2 = self.video_cap.crosshair[1][0], self.video_cap.crosshair[1][1]
-        res = calc_contrast(self.video_cap.frame_bw[x1:x2, y1:y2])
+        res = calc_contrast(self.video_cap.frame_bw[y1:y2, x1:x2])
         if res["contrast"] is not None:
             self.view.Contrast_Label.setText(f'{res["contrast"]:.2f}'.replace('.', ','))
         self.finished_signal.emit()
@@ -69,5 +69,5 @@ class MeasureController(QObject):
             except cv2.error as e:
                 prev = np.zeros_like(curr)
             diff = cv2.absdiff(prev, curr)
-            if diff[diff < 2] / len(diff) > 0.995:
+            if diff[diff < 2].size / diff.size > 0.995:
                 self.calc_contrast()

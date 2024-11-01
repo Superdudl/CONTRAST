@@ -9,6 +9,8 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QAbstractItemView
+
 from view import resources
 from utils import MlpCanvas
 
@@ -271,6 +273,8 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Mera_Table.setHorizontalHeaderItem(2, item)
         item = QtWidgets.QTableWidgetItem()
         self.Mera_Table.setHorizontalHeaderItem(3, item)
+        self.Mera_Table.verticalHeader().setVisible(False)
+        self.Mera_Table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.verticalLayoutWidget_3 = QtWidgets.QWidget(self.Calib_additional)
         self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(3, 141, 423, 263))
         self.verticalLayoutWidget_3.setObjectName("verticalLayoutWidget_3")
@@ -512,7 +516,7 @@ class CameraApp(QtWidgets.QMainWindow):
         self.retranslateUi(Widget)
         self.tabWidget.setCurrentIndex(0)
         self.Calib_tab.setCurrentIndex(0)
-        self.Control_tabWidget.setCurrentIndex(1)
+        self.Control_tabWidget.setCurrentIndex(0)
 
     def retranslateUi(self, Widget):
         _translate = QtCore.QCoreApplication.translate

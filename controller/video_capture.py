@@ -43,7 +43,18 @@ class VideoCapture(QObject):
         self.prev_frame = None
         self.frame_preview = None
         self.crosshair = ((135, 585), (1935, 945))
+        self.setupUI()
         self.update_frame()
+
+    def setupUI(self):
+        self.view.tabWidget.currentChanged.connect(self.change_crosshair)
+
+    def change_crosshair(self, index):
+        if index == 0:
+            self.crosshair = ((135, 585), (1935, 945))
+        elif index == 1:
+            self.crosshair = ((964, 708),(1084, 828))
+
 
     def update_frame(self):
         if platform.system() == 'Windows':

@@ -19,7 +19,7 @@ class MainController(QObject):
         self.view.Contrast_Label.setText("0,00")
 
     def connect_controllers(self):
-        self.calibration_controller = CalibrationController(self.view)
         self.video_capture = VideoCapture(self.view)
         self.measure_controller = MeasureController(self.view, self.video_capture)
+        self.calibration_controller = CalibrationController(self.view, self.video_capture)
         self.params_controller = ParamsController(self.view, self.video_capture, self.measure_controller)

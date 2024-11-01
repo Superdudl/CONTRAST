@@ -16,9 +16,10 @@ class Mera:
         self.value = []
         self.nominal_value = []
         self.id = None
+        self.ADC = []
 
-    def add_mera(self, value, nominal_value):
-        self.value.append(value)
+    def add_mera(self, ADC, nominal_value):
+        self.ADC.append(ADC)
         self.nominal_value.append(nominal_value)
         if self.id is None:
             self.id = 1
@@ -29,18 +30,18 @@ class Mera:
         if self.id is None:
             pass
         else:
-            self.value.pop(id)
+            self.ADC.pop(id)
             self.nominal_value.pop(id)
-            if len(self.value) == 0:
+            if len(self.ADC) == 0:
                 self.id = None
-            elif self.id > len(self.value):
-                self.id = len(self.value)
+            elif self.id > len(self.ADC):
+                self.id = len(self.ADC)
             else:
                 if self.id != 1:
                     self.id -= 1
 
     def __len__(self):
-        return len(self.value)
+        return len(self.ADC)
 
 
 def calibrate(pixel_value, nominal_value, gray_templates=None):
