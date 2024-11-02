@@ -5,7 +5,7 @@
   "AwbEnable": false,
   "NoiseReductionMode": false,
   "Contrast": 1.0,
-  "ColourTemperature": 6000,
+  "ColourTemperature": 4000.0,
   "Brightness": 0.0,
   "ColourGains": [1.0, 1.0]
 }

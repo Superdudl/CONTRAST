@@ -21,7 +21,7 @@ class CalibrationController(QObject):
         self.view.Mera_delete_pushButton.clicked.connect(self.delete_mera)
         self.view.Mera_number_minus_pushButton.clicked.connect(self.minus_mera_num)
         self.view.Mera_number_plus_pushButton.clicked.connect(self.plus_mera_num)
-        self.view.Refresh_ADC_pushButton.clicked.connect(self.update_plot)
+        self.view.Refresh_ADC_pushButton.clicked.connect(self.update_ADC)
 
         self.view.Calib_tab.currentChanged.connect(self.update_plot)
 
