@@ -1,12 +1,13 @@
 import numpy as np
 import cv2
+from numpy.ma.extras import unique
 
 
 def histogram(img):
     # Вычисление гистограммы
-    bins = 64
+    bins = 128
     a = cv2.calcHist([img], [0], None, [bins], ranges=(0, 256)).ravel()
-    a = np.where(a > 0, np.log(a), a)
+    # a = np.where(a > 0, np.log(a), a)
     hist_w = 384
     hist_h = 192
     a = np.uint(0.85 * hist_h * (a / np.max(a)))
@@ -30,8 +31,12 @@ def calc_contrast(img):
     res = np.concatenate((img*paper_mask, img*numbers_mask), axis=1)
     cv2.imwrite('masks.png', res)
 
-    avg_numbers = np.mean(img*numbers_mask) if np.any(numbers_mask) else None
-    avg_paper = np.mean(img*paper_mask) if np.any(paper_mask) else None
+    avg_numbers = None
+    avg_paper = None
+
+    if np.any(numbers_mask) and np.any(paper_mask):
+        avg_numbers = np.mean(img[img * paper_mask > 0])
+        avg_paper = np.mean(img[img * paper_mask > 0])
     contrast = avg_paper / avg_numbers if avg_numbers is not None and avg_paper is not None else None
 
     return {

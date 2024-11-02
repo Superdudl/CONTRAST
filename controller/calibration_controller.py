@@ -13,7 +13,6 @@ class CalibrationController(QObject):
         self.video_cap = video_cap
         self.setupUI(self.view)
         self.mera = Mera()
-        self.update_plot()
 
     def setupUI(self, view):
         self.view.Nominal_minus_pushButton.clicked.connect(self.minus_nominal)
@@ -22,20 +21,22 @@ class CalibrationController(QObject):
         self.view.Mera_delete_pushButton.clicked.connect(self.delete_mera)
         self.view.Mera_number_minus_pushButton.clicked.connect(self.minus_mera_num)
         self.view.Mera_number_plus_pushButton.clicked.connect(self.plus_mera_num)
-        self.view.Refresh_ADC_pushButton.clicked.connect(self.update_ADC)
+        self.view.Refresh_ADC_pushButton.clicked.connect(self.update_plot)
+
+        self.view.Calib_tab.currentChanged.connect(self.update_plot)
 
     def update_ADC(self):
         if self.mera.id is not None:
             x1, y1 = self.video_cap.crosshair[0][0], self.video_cap.crosshair[0][1]
             x2, y2 = self.video_cap.crosshair[1][0], self.video_cap.crosshair[1][1]
-            ADC = np.mean(self.video_cap.frame_bw[y1:y2, x1:x2])
+            ADC = np.uint8(np.mean(self.video_cap.frame_bw[y1:y2, x1:x2]))
             self.mera.ADC[self.mera.id - 1] = ADC
             self.view.Measure_mera_lineEdit.setText(str(self.mera.ADC[self.mera.id - 1]))
 
     def add_mera(self):
         x1, y1 = self.video_cap.crosshair[0][0], self.video_cap.crosshair[0][1]
         x2, y2 = self.video_cap.crosshair[1][0], self.video_cap.crosshair[1][1]
-        ADC = np.mean(self.video_cap.frame_bw[y1:y2, x1:x2])
+        ADC = np.uint8(np.mean(self.video_cap.frame_bw[y1:y2, x1:x2]))
 
         self.mera.add_mera(ADC, np.random.randint(0, 100))
         self.view.Mera_number_lineEdit.setText(str(self.mera.id))
@@ -51,7 +52,14 @@ class CalibrationController(QObject):
 
     def delete_mera(self):
         if self.mera.id is not None:
+            # Удаляем из таблицы
+            for row in range(self.view.Mera_Table.rowCount()):
+                if self.view.Mera_Table.item(row, 0).text() == str(self.mera.id):
+                    self.view.Mera_Table.removeRow(row)
+                    break
+
             self.mera.delete_mera(self.mera.id - 1)
+
         if self.mera.id is None:
             self.view.Nominal_lineEdit.setText('')
             self.view.Mera_number_lineEdit.setText('')
@@ -90,7 +98,11 @@ class CalibrationController(QObject):
                 self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]))
                 self.view.Measure_mera_lineEdit.setText(str(self.mera.ADC[self.mera.id - 1]))
 
-    def update_plot(self):
-        self.view.canvas.axes.cla()
-        self.view.canvas.axes.plot([0, 1, 2, 3, 4], [1, 1, 1, 1, 1])
-        self.view.canvas.draw()
+    def update_plot(self, index):
+        if index == 1:
+            index = np.argsort(self.mera.ADC)
+            sorted_ADC = np.array(self.mera.ADC)[index]
+            sorted_nominal = np.array(self.mera.nominal_value)[index]
+            self.view.canvas.axes.cla()
+            self.view.canvas.axes.scatter(sorted_ADC, sorted_nominal, color='m', s=30)
+            self.view.canvas.draw()

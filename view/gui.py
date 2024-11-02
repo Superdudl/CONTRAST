@@ -282,7 +282,6 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Mera_Plot.setContentsMargins(0, 0, 0, 0)
         self.Mera_Plot.setObjectName("Mera_Plot")
         self.canvas = MlpCanvas(self, width=5, height=4, dpi=100)
-        self.canvas.axes.plot([0,1,2,3,4], [10,1,20,3,40])
         self.Mera_Plot.addWidget(self.canvas)
 
         self.Calib_tab.addTab(self.Calib_additional, "")
@@ -499,7 +498,7 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Exposition_minus_pushButton.setObjectName("Exposition_minus_pushButton")
         self.Exposition_lineEdit = QtWidgets.QLineEdit(self.page_4)
         self.Exposition_lineEdit.setGeometry(QtCore.QRect(200, 40, 70, 50))
-        self.Exposition_lineEdit.setMaxLength(3)
+        self.Exposition_lineEdit.setMaxLength(5)
         self.Exposition_lineEdit.setAlignment(QtCore.Qt.AlignCenter)
         self.Exposition_lineEdit.setObjectName("Exposition_lineEdit")
         self.Exposition_plus_pushButton = QtWidgets.QPushButton(self.page_4)
