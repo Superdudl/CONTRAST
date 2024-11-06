@@ -5,18 +5,26 @@ import numpy as np
 
 
 class ParamsController(QObject):
-    def __init__(self, view, video_cap, measure_conroller):
+    def __init__(self, view, video_cap, measure_controller, led_controller):
         super().__init__()
         self.view = view
+        self.led_controller = led_controller
         self.video_cap = video_cap
-        self.measure_controller = measure_conroller
+        self.measure_controller = measure_controller
         self.setupUI()
+
+        # Назначение выдержки
         if platform.system() != 'Windows':
             self.time_exposition = self.video_cap.camera.capture_metadata()['ExposureTime']
             self.time_exposition = np.around(self.time_exposition / 1000)*1000
         else:
             self.time_exposition = 5e4
         self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000))
+
+        # Назначение ШИМ
+        self.white_pwm = 50
+        self.ir_pwm = 50
+
 
     def setupUI(self):
         # Настройка захвата изображения
@@ -30,6 +38,55 @@ class ParamsController(QObject):
         # Настройка списка настроек
         self.view.listWidget.itemClicked.connect(self.show_params_window_user)
         self.view.listWidget_2.itemClicked.connect(self.show_params_window_service)
+
+        # Настройка ШИМ
+        self.view.White_LED_minus_pushButton.clicked.connect(self.minus_white_led)
+        self.view.White_LED_plus_pushButton.clicked.connect(self.plus_white_led)
+        self.view.IR_LED_minus_pushButton.clicked.connect(self.minus_ir_led)
+        self.view.IR_LED_plus_pushButton.clicked.connect(self.plus_ir_led)
+        self.view.White_LED_Switch.clicked.connect(self.switch_white)
+        self.view.IR_LED_Switch.clicked.connect(self.switch_ir)
+
+    def switch_white(self, button):
+        if button.isChecked():
+            self.led_controller.set_white_led_pwm(duty=self.white_pwm)
+        else:
+            self.led_controller.set_white_led_pwm(duty=0)
+
+    def switch_ir(self, button):
+        if button.isChecked():
+            self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
+        else:
+            self.led_controller.set_white_led_pwm(duty=0)
+
+    def minus_white_led(self):
+        self.white_pwm -= 10
+        if self.white_pwm < 0:
+            self.white_pwm = 0
+        self.led_controller.set_white_led_pwm(duty=self.white_pwm)
+        self.view.WHITE_LED_lineEdit.setText(str(self.white_pwm))
+
+    def plus_white_led(self):
+        self.white_pwm += 10
+        if self.white_pwm > 100:
+            self.white_pwm = 100
+        self.led_controller.set_white_led_pwm(duty=self.white_pwm)
+        self.view.WHITE_LED_lineEdit.setText(str(self.white_pwm))
+
+    def minus_ir_led(self):
+        self.white_pwm -= 10
+        if self.white_pwm < 0:
+            self.white_pwm = 0
+        self.led_controller.set_white_led_pwm(duty=self.ir_pwm)
+        self.view.WHITE_LED_lineEdit.setText(str(self.ir_pwm))
+
+    def plus_ir_led(self):
+        self.white_pwm += 10
+        if self.white_pwm > 100:
+            self.white_pwm = 100
+        self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
+        self.view.IR_LED_lineEdit.setText(str(self.ir_pwm))
+
 
     def show_params_window_user(self, item):
         index = self.view.listWidget.row(item)

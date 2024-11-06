@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QObject
 from PyQt5 import QtGui, QtCore
-from controller import CalibrationController, VideoCapture, ParamsController, MeasureController
+from controller import CalibrationController, VideoCapture, ParamsController, MeasureController, LedController
 
 
 class MainController(QObject):
@@ -20,6 +20,7 @@ class MainController(QObject):
 
     def connect_controllers(self):
         self.video_capture = VideoCapture(self.view)
+        self.led_controller = LedController()
         self.measure_controller = MeasureController(self.view, self.video_capture)
         self.calibration_controller = CalibrationController(self.view, self.video_capture)
         self.params_controller = ParamsController(self.view, self.video_capture, self.measure_controller)
