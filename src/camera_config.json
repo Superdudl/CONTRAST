@@ -1,11 +1,11 @@
 {
   "AnalogueGain": 1,
-  "ExposureTime": 5e2,
+  "ExposureTime": 16e3,
   "AeEnable": false,
   "AwbEnable": false,
   "NoiseReductionMode": false,
   "Contrast": 1.0,
-  "ColourTemperature": 4000.0,
   "Brightness": 0.0,
-  "ColourGains": [1.0, 1.0]
+  "ColourGains": [1.0, 1.0],
+  "ExposureValue": 0.0
 }

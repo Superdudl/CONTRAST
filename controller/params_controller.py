@@ -1,6 +1,7 @@
 import platform
 from PyQt5.QtCore import QObject
 from PyQt5 import QtGui, QtCore
+import numpy as np
 
 
 class ParamsController(QObject):
@@ -11,7 +12,8 @@ class ParamsController(QObject):
         self.measure_controller = measure_conroller
         self.setupUI()
         if platform.system() != 'Windows':
-            self.time_exposition = self.video_cap.camera.capture_metadata()['ExposureTime'] + 1
+            self.time_exposition = self.video_cap.camera.capture_metadata()['ExposureTime']
+            self.time_exposition = np.around(self.time_exposition / 1000)*1000
         else:
             self.time_exposition = 5e4
         self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000))
@@ -65,13 +67,14 @@ class ParamsController(QObject):
     def plus_exposition(self):
         if self.time_exposition + 5e2 <= 1e5:
             self.time_exposition += 5e2
-        self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000))
+            self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000))
 
     def minus_exposition(self):
         if self.time_exposition - 5e2 >= 0:
             self.time_exposition -= 5e2
-        self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000))
+            self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000))
 
     def apply_exposition(self):
         if platform.system() != 'Windows':
             self.video_cap.camera.set_controls({'ExposureTime': int(self.time_exposition)})
+            print(self.video_cap.camera.capture_metadata()['ExposureTime'])

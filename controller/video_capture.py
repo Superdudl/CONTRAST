@@ -30,16 +30,22 @@ class VideoCapture(QObject):
                 self.ctrls = json.load(json_file)
                 self.ctrls['AnalogueGain'] = int(self.ctrls['AnalogueGain'])
                 self.ctrls['ExposureTime'] = int(self.ctrls['ExposureTime'])
+                
 
             self.camera.set_controls(self.ctrls)
             self.camera.start()
             metadata = self.camera.capture_metadata()
             print(metadata)
 
+        self.lookUpTable = np.empty((1,256), np.uint8)
+        for i in range(256):
+            self.lookUpTable[0,i] = np.clip(pow(i / 255.0, 1.4) * 255.0, 0, 255)
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(100)
         self.frame = None
+        self.gain = None
         self.prev_frame = None
         self.frame_preview = None
         self.crosshair = ((135, 585), (1935, 945))
@@ -68,10 +74,15 @@ class VideoCapture(QObject):
         else:
             self.prev_frame = self.frame_preview
             self.frame = self.camera.capture_array('main')
+            self.frame_bw_orig = self.frame[0:self.h, 0:self.w].copy()
+            self.frame_bw = self.frame_bw_orig.copy()
+            if self.gain is not None:
+                self.frame_bw = np.float32(self.frame_bw)
+                self.frame_bw *= self.gain
+                self.frame_bw = np.uint8(self.frame_bw)
             self.frame = cv2.cvtColor(self.frame, cv2.COLOR_YUV420p2BGR)
-            self.frame_bw = cv2.cvtColor(self.frame, cv2.COLOR_RGB2GRAY)
             frame = cv2.rectangle(self.frame, self.crosshair[0], self.crosshair[1], (255, 255, 255), 10)
-            self.frame_preview = cv2.resize(frame, (480, 360))
+            self.frame_preview = cv2.resize(self.frame, (480, 360))
             self.frame_preview = cv2.rotate(self.frame_preview, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
         self.qimage = QImage(self.frame_preview, 360, 480, 360 * 3, QImage.Format_RGB888)

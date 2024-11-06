@@ -5,7 +5,7 @@ from numpy.ma.extras import unique
 
 def histogram(img):
     # Вычисление гистограммы
-    bins = 128
+    bins = 64
     a = cv2.calcHist([img], [0], None, [bins], ranges=(0, 256)).ravel()
     # a = np.where(a > 0, np.log(a), a)
     hist_w = 384
@@ -35,7 +35,7 @@ def calc_contrast(img):
     avg_paper = None
 
     if np.any(numbers_mask) and np.any(paper_mask):
-        avg_numbers = np.mean(img[img * paper_mask > 0])
+        avg_numbers = np.mean(img[img * numbers_mask > 0])
         avg_paper = np.mean(img[img * paper_mask > 0])
     contrast = avg_paper / avg_numbers if avg_numbers is not None and avg_paper is not None else None
 
@@ -46,3 +46,9 @@ def calc_contrast(img):
         'paper_mask': paper_mask.astype(np.uint8) * 255,
         'numbers_mask': numbers_mask.astype(np.uint8) * 255
     }
+
+def calc_gain(frame):
+    h, w = frame.shape[0], frame.shape[1]
+    central_value = frame[int(h / 2), int(w / 2)]
+    gain = central_value/frame
+    return gain

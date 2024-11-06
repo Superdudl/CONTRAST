@@ -4,6 +4,7 @@ from utils.calibration import Mera
 from PyQt5 import QtCore
 from PyQt5.QtCore import QObject
 import numpy as np
+from utils import calc_gain
 
 
 class CalibrationController(QObject):
@@ -22,7 +23,7 @@ class CalibrationController(QObject):
         self.view.Mera_number_minus_pushButton.clicked.connect(self.minus_mera_num)
         self.view.Mera_number_plus_pushButton.clicked.connect(self.plus_mera_num)
         self.view.Refresh_ADC_pushButton.clicked.connect(self.update_ADC)
-
+        self.view.Calibrate_start_pushButton.clicked.connect(self.calibrate)
         self.view.Calib_tab.currentChanged.connect(self.update_plot)
 
     def update_ADC(self):
@@ -49,6 +50,10 @@ class CalibrationController(QObject):
         self.view.Mera_Table.setItem(row_index, 0, QTableWidgetItem(str(self.mera.id)))
         self.view.Mera_Table.setItem(row_index, 1, QTableWidgetItem(str(int(self.mera.ADC[self.mera.id - 1]))))
         self.view.Mera_Table.setItem(row_index, 2, QTableWidgetItem(str(self.mera.nominal_value[self.mera.id - 1])))
+
+    def calibrate(self):
+        if self.mera.id is None:
+            self.video_cap.gain = calc_gain(self.video_cap.frame_bw_orig)
 
     def delete_mera(self):
         if self.mera.id is not None:
@@ -102,7 +107,7 @@ class CalibrationController(QObject):
         if index == 1:
             index = np.argsort(self.mera.ADC)
             sorted_ADC = np.array(self.mera.ADC)[index]
-            sorted_nominal = np.array(self.mera.nominal_value)[index]
+            sorted_nominal = 1 / np.array(self.mera.nominal_value)[index]
             self.view.canvas.axes.cla()
             self.view.canvas.axes.scatter(sorted_ADC, sorted_nominal, color='m', s=30)
             self.view.canvas.draw()
