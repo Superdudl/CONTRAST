@@ -1,5 +1,7 @@
 from PyQt5.QtCore import QObject, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
+from numpy.matlib import empty
+
 from utils import histogram, calc_contrast
 import numpy as np
 import cv2
@@ -59,7 +61,7 @@ class MeasureController(QObject):
         self.view.Img_label.setPixmap(QPixmap.fromImage(qimage))
 
     def motion_detector(self):
-        if self.video_cap.prev_frame is not None:
+        if self.video_cap.prev_frame is not None or self.video_cap.prev_frame is not empty:
             curr = cv2.cvtColor(self.video_cap.frame_preview, cv2.COLOR_RGB2GRAY)
             curr = cv2.GaussianBlur(curr, (21, 21), 3)
 

@@ -24,6 +24,11 @@ class ParamsController(QObject):
         # Назначение ШИМ
         self.white_pwm = 50
         self.ir_pwm = 50
+        self.view.White_LED_lineEdit.setText(str(self.white_pwm))
+        self.view.IR_LED_lineEdit.setText(str(self.white_pwm))
+        if platform.system() != 'Windows':
+            self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
+            self.led_controller.set_white_led_pwm(duty=self.white_pwm)
 
 
     def setupUI(self):
@@ -48,13 +53,13 @@ class ParamsController(QObject):
         self.view.IR_LED_Switch.clicked.connect(self.switch_ir)
 
     def switch_white(self, button):
-        if button.isChecked():
+        if self.view.White_LED_Switch.isChecked():
             self.led_controller.set_white_led_pwm(duty=self.white_pwm)
         else:
             self.led_controller.set_white_led_pwm(duty=0)
 
     def switch_ir(self, button):
-        if button.isChecked():
+        if self.view.IR_LED_Switch.isChecked():
             self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
         else:
             self.led_controller.set_white_led_pwm(duty=0)
@@ -63,28 +68,32 @@ class ParamsController(QObject):
         self.white_pwm -= 10
         if self.white_pwm < 0:
             self.white_pwm = 0
-        self.led_controller.set_white_led_pwm(duty=self.white_pwm)
-        self.view.WHITE_LED_lineEdit.setText(str(self.white_pwm))
+        if platform.system() != 'Windows':
+            self.led_controller.set_white_led_pwm(duty=self.white_pwm)
+        self.view.White_LED_lineEdit.setText(str(self.white_pwm))
 
     def plus_white_led(self):
         self.white_pwm += 10
         if self.white_pwm > 100:
             self.white_pwm = 100
-        self.led_controller.set_white_led_pwm(duty=self.white_pwm)
-        self.view.WHITE_LED_lineEdit.setText(str(self.white_pwm))
+        if platform.system() != 'Windows':
+            self.led_controller.set_white_led_pwm(duty=self.white_pwm)
+        self.view.White_LED_lineEdit.setText(str(self.white_pwm))
 
     def minus_ir_led(self):
-        self.white_pwm -= 10
-        if self.white_pwm < 0:
-            self.white_pwm = 0
-        self.led_controller.set_white_led_pwm(duty=self.ir_pwm)
-        self.view.WHITE_LED_lineEdit.setText(str(self.ir_pwm))
+        self.ir_pwm -= 10
+        if self.ir_pwm < 0:
+            self.ir_pwm = 0
+        if platform.system() != 'Windows':
+            self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
+        self.view.IR_LED_lineEdit.setText(str(self.ir_pwm))
 
     def plus_ir_led(self):
-        self.white_pwm += 10
-        if self.white_pwm > 100:
-            self.white_pwm = 100
-        self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
+        self.ir_pwm += 10
+        if self.ir_pwm > 100:
+            self.ir_pwm = 100
+        if platform.system() != 'Windows':
+            self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
         self.view.IR_LED_lineEdit.setText(str(self.ir_pwm))
 
 

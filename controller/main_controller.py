@@ -23,4 +23,5 @@ class MainController(QObject):
         self.led_controller = LedController()
         self.measure_controller = MeasureController(self.view, self.video_capture)
         self.calibration_controller = CalibrationController(self.view, self.video_capture)
-        self.params_controller = ParamsController(self.view, self.video_capture, self.measure_controller)
+        self.params_controller = ParamsController(self.view, self.video_capture, self.measure_controller,
+                                                  self.led_controller)

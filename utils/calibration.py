@@ -46,6 +46,8 @@ class Mera:
 
 def calibrate(pixel_value, nominal_value, gray_templates=None):
     n = np.size(pixel_value)
+    pixel_value = np.array(pixel_value, dtype = float)
+    nominal_value = np.array(nominal_value, dtype = float)
 
     mean_pixel_value = np.mean(pixel_value)
     mean_nominal_value = np.mean(nominal_value)
@@ -66,17 +68,15 @@ def calibrate(pixel_value, nominal_value, gray_templates=None):
 
 def plot_regression(x, y, k, b):
     plt.scatter(x, y, color='m', s=30)
-
-    y_pred = k * x + b
-
-    plt.plot(x, y_pred, color='g')
+    y_pred = k * np.linspace(0,255, 256) + b
+    plt.plot(np.linspace(0,255, 256), y_pred, color='g')
 
 
 if __name__ == '__main__':
     a = Mera()
     b = Mera()
-    x = np.array([10, 100, 180, 240])
-    y = np.array([15, 40, 60, 90])
+    x = np.array([124, 102, 75, 23])
+    y = np.array([0.8, 0.73, 0.6, 0.3])
 
     k, b = calibrate(x, y)
     print(f'k = {k}\nb = {b}')

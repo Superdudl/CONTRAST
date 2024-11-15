@@ -71,7 +71,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="elideMode">
     <enum>Qt::ElideLeft</enum>
@@ -810,7 +810,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <property name="iconSize">
          <size>
@@ -1106,7 +1106,7 @@
            <string notr="true"/>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="page_6"/>
           <widget class="QWidget" name="page_3">
@@ -1264,7 +1264,7 @@
              <bool>false</bool>
             </property>
            </widget>
-           <widget class="QPushButton" name="White_LED_plus_pushButton_2">
+           <widget class="QPushButton" name="White_LED_Switch">
             <property name="geometry">
              <rect>
               <x>338</x>
@@ -1293,7 +1293,7 @@
              <bool>true</bool>
             </property>
            </widget>
-           <widget class="QPushButton" name="White_LED_plus_pushButton_3">
+           <widget class="QPushButton" name="IR_LED_Switch">
             <property name="geometry">
              <rect>
               <x>338</x>
