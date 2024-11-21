@@ -9,16 +9,20 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QAbstractItemView
-
-from view import resources
-from utils import MlpCanvas
-
+from pathlib import PurePath, Path
+from utils import MlpCanvas, save_settings
+from . import resources
 
 class CameraApp(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+
+    def closeEvent(self, event):
+        save_settings(self)
+        event.accept()
 
     def setupUi(self, Widget):
         Widget.setObjectName("Widget")
@@ -51,12 +55,12 @@ class CameraApp(QtWidgets.QMainWindow):
         font = QtGui.QFont()
         font.setPointSize(36)
         self.Contrast_Label.setFont(font)
-        self.Contrast_Label.setText("0.00")
+        self.Contrast_Label.setText("")
         self.Contrast_Label.setAlignment(QtCore.Qt.AlignCenter)
         self.Contrast_Label.setObjectName("Contrast_Label")
         self.Measure_pushButton = QtWidgets.QPushButton(self.Measure_page)
         self.Measure_pushButton.setEnabled(True)
-        self.Measure_pushButton.setGeometry(QtCore.QRect(32, 362, 371, 61))
+        self.Measure_pushButton.setGeometry(QtCore.QRect(32, 340, 371, 90))
         font = QtGui.QFont()
         font.setPointSize(20)
         font.setStyleStrategy(QtGui.QFont.PreferAntialias)
@@ -361,12 +365,20 @@ class CameraApp(QtWidgets.QMainWindow):
         self.recovery_settings_pushButton_2.setObjectName("recovery_settings_pushButton_2")
         self.stackedWidget.addWidget(self.page_recover)
 
-        self.calib_page = QtWidgets.QWidget()
-        self.calib_page.setObjectName("calib_page")
-        self.gridLayoutWidget_4 = QtWidgets.QWidget(self.calib_page)
-        self.calib_units = QtWidgets.QCheckBox(self.calib_page)
-        self.calib_units.setGeometry(QtCore.QRect(30, 68, 330, 40))
-        self.stackedWidget.addWidget(self.calib_page)
+        self.units_page = QtWidgets.QWidget()
+        self.units_page.setObjectName("units_page")
+        self.units_page_layout = QtWidgets.QVBoxLayout(self.units_page)
+        self.units = QtWidgets.QRadioButton(self.units_page)
+        self.units2 = QtWidgets.QRadioButton(self.units_page)
+        self.units3 = QtWidgets.QRadioButton(self.units_page)
+        self.units.setChecked(False)
+        self.units2.setChecked(False)
+        self.units3.setChecked(True)
+        self.units_page_layout.addWidget(self.units)
+        self.units_page_layout.addWidget(self.units2)
+        self.units_page_layout.addWidget(self.units3)
+        self.units_page_layout.setContentsMargins(50, 0, 0, 0)
+        self.stackedWidget.addWidget(self.units_page)
 
         self.page_about_sys = QtWidgets.QWidget()
         self.page_about_sys.setObjectName("page_about_sys")
@@ -400,12 +412,6 @@ class CameraApp(QtWidgets.QMainWindow):
         self.label_4.setMaximumSize(QtCore.QSize(16777215, 30))
         self.label_4.setObjectName("label_4")
         self.gridLayout.addWidget(self.label_4, 1, 1, 1, 1)
-        self.label_7 = QtWidgets.QLabel(self.gridLayoutWidget_4)
-        self.label_7.setObjectName("label_7")
-        self.gridLayout.addWidget(self.label_7, 3, 0, 1, 1)
-        self.label_8 = QtWidgets.QLabel(self.gridLayoutWidget_4)
-        self.label_8.setObjectName("label_8")
-        self.gridLayout.addWidget(self.label_8, 3, 1, 1, 1)
         self.stackedWidget.addWidget(self.page_about_sys)
         self.Control_tabWidget.addTab(self.User_tab, "Пользовательские")
         self.tab_service = QtWidgets.QWidget()
@@ -561,23 +567,23 @@ class CameraApp(QtWidgets.QMainWindow):
         item = self.listWidget.item(1)
         item.setText(_translate("Widget", "Восстановить заводскую калибровку"))
         item = self.listWidget.item(2)
-        item.setText(_translate("Widget", "Калибровка"))
+        item.setText(_translate("Widget", "Единицы измерения"))
         item = self.listWidget.item(3)
         item.setText(_translate("Widget", "О системе"))
         self.listWidget.setSortingEnabled(__sortingEnabled)
         self.Capture_image_checkBox.setText(_translate("Widget", "Захват при отсутствии движения"))
         self.EN_Hist_checkBox.setText(_translate("Widget", "Отображать гистограмму"))
-        self.calib_units.setText(_translate("Widget", "В единицах оптической плотности"))
+        self.units.setText(_translate("Widget", "Оптическая плотность"))
+        self.units2.setText(_translate("Widget", "Показатель отражения"))
+        self.units3.setText(_translate("Widget", "Контраст"))
         self.Apply_capture_image_pushButton.setText(_translate("Widget", "Применить"))
         self.recovery_settings_pushButton_2.setText(_translate("Widget", "Восстановить"))
         self.label_2.setText(_translate("Widget", "0.1"))
         self.label.setText(_translate("Widget", "Версия:"))
-        self.label_6.setText(_translate("Widget", "192.168.0.1"))
+        self.label_6.setText(_translate("Widget", "192.168.100.2"))
         self.label_3.setText(_translate("Widget", "Дата:"))
         self.label_5.setText(_translate("Widget", "IP"))
         self.label_4.setText(_translate("Widget", "30.10.2024"))
-        self.label_7.setText(_translate("Widget", "Port"))
-        self.label_8.setText(_translate("Widget", "55555"))
         __sortingEnabled = self.listWidget_2.isSortingEnabled()
         self.listWidget_2.setSortingEnabled(False)
         item = self.listWidget_2.item(0)

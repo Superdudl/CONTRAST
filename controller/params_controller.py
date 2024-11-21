@@ -2,6 +2,8 @@ import platform
 from PyQt5.QtCore import QObject
 from PyQt5 import QtGui, QtCore
 import numpy as np
+from matplotlib.pyplot import imshow
+from pathlib import PurePath, Path
 
 
 class ParamsController(QObject):
@@ -19,21 +21,19 @@ class ParamsController(QObject):
             self.time_exposition = np.around(self.time_exposition / 1000)*1000
         else:
             self.time_exposition = 5e4
-        self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000))
+        self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000).replace('.', ','))
 
         # Назначение ШИМ
-        self.white_pwm = 50
-        self.ir_pwm = 50
-        self.view.White_LED_lineEdit.setText(str(self.white_pwm))
-        self.view.IR_LED_lineEdit.setText(str(self.white_pwm))
-        if platform.system() != 'Windows':
-            self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
-            self.led_controller.set_white_led_pwm(duty=self.white_pwm)
+        self.white_pwm = int(self.video_cap.ctrls["White_PWM"])
+        self.ir_pwm = int(self.video_cap.ctrls["White_PWM"])
+        self.view.White_LED_lineEdit.setText(str(self.white_pwm).replace('.', ','))
+        self.view.IR_LED_lineEdit.setText(str(self.white_pwm).replace('.', ','))
 
 
     def setupUI(self):
         # Настройка захвата изображения
-        self.view.Apply_capture_image_pushButton.clicked.connect(self.apply_img_capture_params)
+        self.view.EN_Hist_checkBox.clicked.connect(self.hist_checkbox)
+        self.view.Capture_image_checkBox.clicked.connect(self.capture_checkbox)
 
         # Настройка выдержки
         self.view.Exposition_minus_pushButton.clicked.connect(self.minus_exposition)
@@ -52,6 +52,13 @@ class ParamsController(QObject):
         self.view.White_LED_Switch.clicked.connect(self.switch_white)
         self.view.IR_LED_Switch.clicked.connect(self.switch_ir)
 
+        # Восстановить заводские настройки
+        calib_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'calib_config.npy')
+        factory_calib_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'calib_config.npy')
+        if Path(factory_calib_file).exists():
+            self.video_cap.calib_LUT = np.load(Path(factory_calib_file))
+            Path(calib_file).unlink(missing_ok=True)
+
     def switch_white(self, button):
         if self.view.White_LED_Switch.isChecked():
             self.led_controller.set_white_led_pwm(duty=self.white_pwm)
@@ -62,7 +69,7 @@ class ParamsController(QObject):
         if self.view.IR_LED_Switch.isChecked():
             self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
         else:
-            self.led_controller.set_white_led_pwm(duty=0)
+            self.led_controller.set_ir_led_pwm(duty=0)
 
     def minus_white_led(self):
         self.white_pwm -= 10
@@ -70,7 +77,7 @@ class ParamsController(QObject):
             self.white_pwm = 0
         if platform.system() != 'Windows':
             self.led_controller.set_white_led_pwm(duty=self.white_pwm)
-        self.view.White_LED_lineEdit.setText(str(self.white_pwm))
+        self.view.White_LED_lineEdit.setText(str(self.white_pwm).replace('.', ','))
 
     def plus_white_led(self):
         self.white_pwm += 10
@@ -78,7 +85,7 @@ class ParamsController(QObject):
             self.white_pwm = 100
         if platform.system() != 'Windows':
             self.led_controller.set_white_led_pwm(duty=self.white_pwm)
-        self.view.White_LED_lineEdit.setText(str(self.white_pwm))
+        self.view.White_LED_lineEdit.setText(str(self.white_pwm).replace('.', ','))
 
     def minus_ir_led(self):
         self.ir_pwm -= 10
@@ -86,7 +93,7 @@ class ParamsController(QObject):
             self.ir_pwm = 0
         if platform.system() != 'Windows':
             self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
-        self.view.IR_LED_lineEdit.setText(str(self.ir_pwm))
+        self.view.IR_LED_lineEdit.setText(str(self.ir_pwm).replace('.', ','))
 
     def plus_ir_led(self):
         self.ir_pwm += 10
@@ -94,7 +101,7 @@ class ParamsController(QObject):
             self.ir_pwm = 100
         if platform.system() != 'Windows':
             self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
-        self.view.IR_LED_lineEdit.setText(str(self.ir_pwm))
+        self.view.IR_LED_lineEdit.setText(str(self.ir_pwm).replace('.', ','))
 
 
     def show_params_window_user(self, item):
@@ -105,7 +112,7 @@ class ParamsController(QObject):
         index = self.view.listWidget_2.row(item)
         self.view.stackedWidget_2.setCurrentIndex(index + 1)
 
-    def apply_img_capture_params(self):
+    def hist_checkbox(self):
         if self.view.EN_Hist_checkBox.isChecked():
             self.view.Hist_Widget.show()
             self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 220, 300, 140))
@@ -119,6 +126,7 @@ class ParamsController(QObject):
             font.setPointSize(100)
             self.view.Contrast_Label.setFont(font)
 
+    def capture_checkbox(self):
         if self.view.Capture_image_checkBox.isChecked():
             self.view.Measure_pushButton.setEnabled(False)
             self.video_cap.timer.timeout.connect(self.measure_controller.motion_detector)
@@ -133,12 +141,12 @@ class ParamsController(QObject):
     def plus_exposition(self):
         if self.time_exposition + 5e2 <= 1e5:
             self.time_exposition += 5e2
-            self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000))
+            self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000).replace('.', ','))
 
     def minus_exposition(self):
         if self.time_exposition - 5e2 >= 0:
             self.time_exposition -= 5e2
-            self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000))
+            self.view.Exposition_lineEdit.setText(str(self.time_exposition / 1000).replace('.', ','))
 
     def apply_exposition(self):
         if platform.system() != 'Windows':

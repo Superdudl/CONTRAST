@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QObject, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
-from numpy.matlib import empty
-
+from numpy import empty
 from utils import histogram, calc_contrast
 import numpy as np
 import cv2
@@ -18,8 +17,11 @@ class WorkerThread(QThread):
         x1, y1 = self.video_cap.crosshair[0][0], self.video_cap.crosshair[0][1]
         x2, y2 = self.video_cap.crosshair[1][0], self.video_cap.crosshair[1][1]
         res = calc_contrast(self.video_cap.frame_bw[y1:y2, x1:x2])
-        if res["contrast"] is not None:
+        if res["contrast"] is not None and (self.view.units2.isChecked() or self.view.units3.isChecked()):
             self.view.Contrast_Label.setText(f'{res["contrast"]:.2f}'.replace('.', ','))
+        if res["contrast"] is not None and self.view.units.isChecked():
+            res = np.log(res['contrast'])
+            self.view.Contrast_Label.setText(f'{res:.2f}'.replace('.', ','))
         self.finished_signal.emit()
 
 

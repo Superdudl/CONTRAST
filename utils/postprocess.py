@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from numpy.ma.extras import unique
+import platform
 
 
 def histogram(img):
@@ -29,7 +29,8 @@ def calc_contrast(img):
     numbers_mask = cv2.threshold(img, 127, 1, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
     paper_mask = 1 - numbers_mask
     res = np.concatenate((img*paper_mask, img*numbers_mask), axis=1)
-    cv2.imwrite('masks.png', res)
+    if platform.system != 'Windows':
+        cv2.imwrite('/home/contrast/shared/masks.png', res)
 
     avg_numbers = None
     avg_paper = None
