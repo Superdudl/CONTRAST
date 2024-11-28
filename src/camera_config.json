@@ -7,7 +7,5 @@
   "Contrast": 1.0,
   "Brightness": 0.0,
   "ColourGains": [1.0, 1.0],
-  "ExposureValue": 0.0,
-  "White_PWM": 100,
-  "IR_PWM": 100
+  "ExposureValue": 0.0
 }

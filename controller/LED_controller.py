@@ -6,6 +6,8 @@ if platform.system() != 'Windows':
 class LedController(QObject):
     def __init__(self):
         super().__init__()
+        self.white_pwm = None
+        self.ir_pwm = None
         if platform.system() != 'Windows':
             self.gpio = pigpio.pi()
             self.gpio.write(6,1)
@@ -17,7 +19,9 @@ class LedController(QObject):
             self.gpio.set_PWM_dutycycle(13, 0)
 
     def set_white_led_pwm(self, duty):
+        self.white_pwm = duty
         self.gpio.set_PWM_dutycycle(13, duty)
 
     def set_ir_led_pwm(self, duty):
+        self.ir_pwm = duty
         self.gpio.set_PWM_dutycycle(12, duty)

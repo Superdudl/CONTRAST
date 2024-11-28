@@ -10,19 +10,15 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QSettings
-from PyQt5.QtWidgets import QAbstractItemView
+from PyQt5.QtWidgets import QAbstractItemView, QLabel
 from pathlib import PurePath, Path
-from utils import MlpCanvas, save_settings
+from utils import MlpCanvas
 from . import resources
 
 class CameraApp(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-
-    def closeEvent(self, event):
-        save_settings(self)
-        event.accept()
 
     def setupUi(self, Widget):
         Widget.setObjectName("Widget")
@@ -37,7 +33,7 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Img_label.setText("")
         self.Img_label.setObjectName("Img_label")
         self.tabWidget = QtWidgets.QTabWidget(Widget)
-        self.tabWidget.setGeometry(QtCore.QRect(364, 0, 439, 483))
+        self.tabWidget.setGeometry(QtCore.QRect(364, 15 , 439, 483))
         self.tabWidget.setMaximumSize(QtCore.QSize(800, 600))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -60,7 +56,7 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Contrast_Label.setObjectName("Contrast_Label")
         self.Measure_pushButton = QtWidgets.QPushButton(self.Measure_page)
         self.Measure_pushButton.setEnabled(True)
-        self.Measure_pushButton.setGeometry(QtCore.QRect(32, 340, 371, 90))
+        self.Measure_pushButton.setGeometry(QtCore.QRect(32, 340, 371, 70))
         font = QtGui.QFont()
         font.setPointSize(20)
         font.setStyleStrategy(QtGui.QFont.PreferAntialias)
@@ -139,7 +135,7 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Mera_num_max_label.setText("")
         self.Mera_num_max_label.setObjectName("Mera_num_max_label")
         self.gridLayoutWidget = QtWidgets.QWidget(self.Calib_basic)
-        self.gridLayoutWidget.setGeometry(QtCore.QRect(16, 270, 391, 131))
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(16, 260, 391, 131))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
         self.Calib_buttons_gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
         self.Calib_buttons_gridLayout.setContentsMargins(0, 0, 0, 0)
@@ -150,6 +146,7 @@ class CameraApp(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.Mera_push_pushButton.sizePolicy().hasHeightForWidth())
         self.Mera_push_pushButton.setSizePolicy(sizePolicy)
+        self.Mera_push_pushButton.setMaximumSize(500, 50)
         self.Mera_push_pushButton.setObjectName("Mera_push_pushButton")
         self.Calib_buttons_gridLayout.addWidget(self.Mera_push_pushButton, 2, 0, 1, 1)
         self.Mera_delete_pushButton = QtWidgets.QPushButton(self.gridLayoutWidget)
@@ -158,6 +155,7 @@ class CameraApp(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.Mera_delete_pushButton.sizePolicy().hasHeightForWidth())
         self.Mera_delete_pushButton.setSizePolicy(sizePolicy)
+        self.Mera_delete_pushButton.setMaximumSize(500, 50)
         self.Mera_delete_pushButton.setObjectName("Mera_delete_pushButton")
         self.Calib_buttons_gridLayout.addWidget(self.Mera_delete_pushButton, 2, 2, 1, 1)
         self.Calibrate_start_pushButton = QtWidgets.QPushButton(self.gridLayoutWidget)
@@ -166,6 +164,7 @@ class CameraApp(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.Calibrate_start_pushButton.sizePolicy().hasHeightForWidth())
         self.Calibrate_start_pushButton.setSizePolicy(sizePolicy)
+        self.Calibrate_start_pushButton.setMaximumSize(500, 50)
         self.Calibrate_start_pushButton.setObjectName("Calibrate_start_pushButton")
         self.Calib_buttons_gridLayout.addWidget(self.Calibrate_start_pushButton, 3, 0, 1, 1)
         self.Calibrate_save_pushButton = QtWidgets.QPushButton(self.gridLayoutWidget)
@@ -174,6 +173,7 @@ class CameraApp(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.Calibrate_save_pushButton.sizePolicy().hasHeightForWidth())
         self.Calibrate_save_pushButton.setSizePolicy(sizePolicy)
+        self.Calibrate_save_pushButton.setMaximumSize(500, 50)
         self.Calibrate_save_pushButton.setObjectName("Calibrate_save_pushButton")
         self.Calib_buttons_gridLayout.addWidget(self.Calibrate_save_pushButton, 3, 2, 1, 1)
         self.Text_calibrate_page_label = QtWidgets.QLabel(self.Calib_basic)
@@ -348,15 +348,20 @@ class CameraApp(QtWidgets.QMainWindow):
         self.page_img_cap = QtWidgets.QWidget()
         self.page_img_cap.setTabletTracking(False)
         self.page_img_cap.setObjectName("page_img_cap")
+        self.Capture_layout = QtWidgets.QVBoxLayout(self.page_img_cap)
+        self.Capture_layout.setContentsMargins(50, 0, 0, 0)
         self.Capture_image_checkBox = QtWidgets.QCheckBox(self.page_img_cap)
         self.Capture_image_checkBox.setGeometry(QtCore.QRect(30, 20, 310, 50))
         self.Capture_image_checkBox.setObjectName("Capture_image_checkBox")
         self.EN_Hist_checkBox = QtWidgets.QCheckBox(self.page_img_cap)
         self.EN_Hist_checkBox.setGeometry(QtCore.QRect(30, 68, 310, 50))
         self.EN_Hist_checkBox.setObjectName("EN_Hist_checkBox")
-        self.Apply_capture_image_pushButton = QtWidgets.QPushButton(self.page_img_cap)
-        self.Apply_capture_image_pushButton.setGeometry(QtCore.QRect(122, 150, 180, 50))
-        self.Apply_capture_image_pushButton.setObjectName("Apply_capture_image_pushButton")
+        self.Hist_scale_checkbox = QtWidgets.QCheckBox(self.page_img_cap)
+        self.Hist_scale_checkbox.setGeometry(QtCore.QRect(30, 68, 310, 50))
+        self.Hist_scale_checkbox.setObjectName("Hist_scale")
+        self.Capture_layout.addWidget(self.EN_Hist_checkBox)
+        self.Capture_layout.addWidget(self.Hist_scale_checkbox)
+        self.Capture_layout.addWidget(self.Capture_image_checkBox)
         self.stackedWidget.addWidget(self.page_img_cap)
         self.page_recover = QtWidgets.QWidget()
         self.page_recover.setObjectName("page_recover")
@@ -514,9 +519,6 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Exposition_plus_pushButton = QtWidgets.QPushButton(self.page_4)
         self.Exposition_plus_pushButton.setGeometry(QtCore.QRect(280, 40, 50, 50))
         self.Exposition_plus_pushButton.setObjectName("Exposition_plus_pushButton")
-        self.Exposition_Apply_pushButton = QtWidgets.QPushButton(self.page_4)
-        self.Exposition_Apply_pushButton.setGeometry(QtCore.QRect(140, 120, 191, 50))
-        self.Exposition_Apply_pushButton.setObjectName("Exposition_Apply_pushButton")
         self.stackedWidget_2.addWidget(self.page_4)
         self.Control_tabWidget.addTab(self.tab_service, "Сервисные")
         self.verticalLayout.addWidget(self.Control_tabWidget)
@@ -529,7 +531,7 @@ class CameraApp(QtWidgets.QMainWindow):
 
     def retranslateUi(self, Widget):
         _translate = QtCore.QCoreApplication.translate
-        Widget.setWindowTitle(_translate("Widget", "Widget"))
+        Widget.setWindowTitle(_translate("Widget", "КОНТРАСТОМЕТР"))
         self.Measure_pushButton.setText(_translate("Widget", "Измерение"))
         self.hist_tick_50.setText(_translate("Widget", "50"))
         self.hist_tick_0.setText(_translate("Widget", "0"))
@@ -573,10 +575,10 @@ class CameraApp(QtWidgets.QMainWindow):
         self.listWidget.setSortingEnabled(__sortingEnabled)
         self.Capture_image_checkBox.setText(_translate("Widget", "Захват при отсутствии движения"))
         self.EN_Hist_checkBox.setText(_translate("Widget", "Отображать гистограмму"))
+        self.Hist_scale_checkbox.setText(_translate("Widget", "Логарифмический масштаб"))
         self.units.setText(_translate("Widget", "Оптическая плотность"))
         self.units2.setText(_translate("Widget", "Показатель отражения"))
         self.units3.setText(_translate("Widget", "Контраст"))
-        self.Apply_capture_image_pushButton.setText(_translate("Widget", "Применить"))
         self.recovery_settings_pushButton_2.setText(_translate("Widget", "Восстановить"))
         self.label_2.setText(_translate("Widget", "0.1"))
         self.label.setText(_translate("Widget", "Версия:"))
@@ -604,5 +606,4 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Exposition_minus_pushButton.setText(_translate("Widget", "-"))
         self.Exposition_lineEdit.setText(_translate("Widget", "100"))
         self.Exposition_plus_pushButton.setText(_translate("Widget", "+"))
-        self.Exposition_Apply_pushButton.setText(_translate("Widget", "Применить"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Control_page), _translate("Widget", "Настройки"))

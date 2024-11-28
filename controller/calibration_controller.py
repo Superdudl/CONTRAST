@@ -35,9 +35,10 @@ class CalibrationController(QObject):
 
     def save_calibration(self):
         if self.calib_nominal is not None:
+            self.calib_nominal = np.clip(self.calib_nominal, 0, 1)
             self.video_cap.calib_LUT = np.uint8(self.calib_nominal * 255)
-            path = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'calib_config')
-            np.save(path, self.video_cap.calib_LUT)
+            calib_path = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'calib_config')
+            np.save(calib_path, self.video_cap.calib_LUT)
 
     def change_nominal(self, text):
         if self.mera.id is not None and len(text) > 0:
@@ -53,7 +54,7 @@ class CalibrationController(QObject):
         if self.mera.id is not None:
             x1, y1 = self.video_cap.crosshair[0][0], self.video_cap.crosshair[0][1]
             x2, y2 = self.video_cap.crosshair[1][0], self.video_cap.crosshair[1][1]
-            ADC = np.uint8(np.mean(self.video_cap.frame_bw[y1:y2, x1:x2]))
+            ADC = np.uint8(np.mean(self.video_cap.frame_bw_orig[y1:y2, x1:x2]))
             self.mera.ADC[self.mera.id - 1] = ADC
             self.view.Measure_mera_lineEdit.setText(str(self.mera.ADC[self.mera.id - 1]).replace('.', ','))
             for row in range(self.view.Mera_Table.rowCount()):
@@ -65,8 +66,14 @@ class CalibrationController(QObject):
         x1, y1 = self.video_cap.crosshair[0][0], self.video_cap.crosshair[0][1]
         x2, y2 = self.video_cap.crosshair[1][0], self.video_cap.crosshair[1][1]
         ADC = np.uint8(np.mean(self.video_cap.frame_bw_orig[y1:y2, x1:x2]))
-
-        self.mera.add_mera(ADC, np.random.randint(0, 100))
+        if self.mera.id is None:
+            self.mera.add_mera(ADC, 1.3)
+        elif len(self.mera) == 1:
+            self.mera.add_mera(ADC, 1.93)
+        elif len(self.mera) == 2:
+            self.mera.add_mera(ADC, 5.0)
+        else:
+            self.mera.add_mera(ADC, 1.0)        
         self.view.Mera_number_lineEdit.setText(str(self.mera.id).replace('.', ','))
         self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]).replace('.', ','))
         self.view.Measure_mera_lineEdit.setText(str(self.mera.ADC[self.mera.id - 1]).replace('.', ','))
@@ -83,7 +90,15 @@ class CalibrationController(QObject):
 
     def calibrate(self):
         if self.mera.id is None and platform.system() != 'Windows':
-            self.video_cap.gain = calc_gain(self.video_cap.frame_bw_orig)
+            if np.mean(self.video_cap.orig_frame) < 100:
+                self.video_cap.dark = self.video_cap.orig_frame
+                dark_path = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'dark_config.npy')
+                np.save(dark_path, self.video_cap.dark)
+                self.video_cap.gain = None
+            else:
+                self.video_cap.gain = calc_gain(self.video_cap.frame)
+                gain_path = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'gain_config.npy')
+                np.save(gain_path, self.video_cap.gain)
         else:
             if self.view.units.isChecked():
                 nominal = 10 ** -np.array(self.mera.nominal_value)
@@ -97,7 +112,7 @@ class CalibrationController(QObject):
             for row in range(self.view.Mera_Table.rowCount()):
                 ADC = np.uint8(float(self.view.Mera_Table.item(row, 1).text()))
                 if self.view.units.isChecked():
-                    res = 10 ** -np.array(self.calib_nominal[ADC])
+                    res = np.log10(1 / np.array(self.calib_nominal[ADC]))
                     self.view.Mera_Table.item(row, 3).setText(f'{res:.2f}'.replace('.', ','))
                 elif self.view.units3.isChecked():
                     res = 1 / np.array(self.calib_nominal[ADC])
@@ -179,4 +194,5 @@ class CalibrationController(QObject):
             if self.calib_nominal is not None:
                 self.view.canvas.axes.plot(np.linspace(0, 255, 256), self.calib_nominal)
             self.view.canvas.axes.set_xlim(0, 255)
+            self.view.canvas.axes.set_ylim(0, 1)
             self.view.canvas.draw()
