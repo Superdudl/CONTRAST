@@ -20,8 +20,8 @@ class LedController(QObject):
 
     def set_white_led_pwm(self, duty):
         self.white_pwm = duty
-        self.gpio.set_PWM_dutycycle(13, duty)
+        self.gpio.set_PWM_dutycycle(12, duty)
 
     def set_ir_led_pwm(self, duty):
         self.ir_pwm = duty
-        self.gpio.set_PWM_dutycycle(12, duty)
+        self.gpio.set_PWM_dutycycle(13, duty)

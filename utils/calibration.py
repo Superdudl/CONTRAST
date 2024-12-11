@@ -18,6 +18,12 @@ class Mera:
         self.id = None
         self.ADC = []
 
+    def clear(self):
+        self.value = []
+        self.nominal_value = []
+        self.id = None
+        self.ADC = []
+
     def add_mera(self, ADC, nominal_value):
         self.ADC.append(ADC)
         self.nominal_value.append(nominal_value)
@@ -44,7 +50,7 @@ class Mera:
         return len(self.ADC)
 
 
-def calibrate(pixel_value, nominal_value, gray_templates=None):
+def calibrate(pixel_value, nominal_value, gray_templates=False):
     n = np.size(pixel_value)
     pixel_value = np.array(pixel_value, dtype = float)
     nominal_value = np.array(nominal_value, dtype = float)
@@ -58,10 +64,10 @@ def calibrate(pixel_value, nominal_value, gray_templates=None):
     k = SS_xy / SS_xx
     b = mean_nominal_value - k * mean_pixel_value
 
-    if gray_templates is not None:
-        optical_density_gray = k * gray_templates + b
-
-        return optical_density_gray
+    if gray_templates:
+        LUT = k*np.linspace(0,255,256)+b
+        LUT = np.uint8(np.clip(LUT,0,1)*255)
+        return LUT
 
     return [k, b]
 

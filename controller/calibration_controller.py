@@ -16,6 +16,7 @@ class CalibrationController(QObject):
         self.video_cap = video_cap
         self.setupUI(self.view)
         self.mera = Mera()
+        self.gray_temp = Mera()
         self.calib_nominal = None
 
     def setupUI(self, view):
@@ -35,10 +36,9 @@ class CalibrationController(QObject):
 
     def save_calibration(self):
         if self.calib_nominal is not None:
-            self.calib_nominal = np.clip(self.calib_nominal, 0, 1)
-            self.video_cap.calib_LUT = np.uint8(self.calib_nominal * 255)
-            calib_path = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'calib_config')
-            np.save(calib_path, self.video_cap.calib_LUT)
+            self.video_cap.gray_templates = self.gray_temp.nominal_value
+            calib_path = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'gray_templates.npy')
+            np.save(Path(calib_path), np.array(self.gray_temp.nominal_value))
 
     def change_nominal(self, text):
         if self.mera.id is not None and len(text) > 0:
@@ -65,7 +65,7 @@ class CalibrationController(QObject):
     def add_mera(self):
         x1, y1 = self.video_cap.crosshair[0][0], self.video_cap.crosshair[0][1]
         x2, y2 = self.video_cap.crosshair[1][0], self.video_cap.crosshair[1][1]
-        ADC = np.uint8(np.mean(self.video_cap.frame_bw_orig[y1:y2, x1:x2]))
+        ADC = np.uint8(np.mean(self.video_cap.frame_bw_noLUT[y1:y2, x1:x2]))
         if self.mera.id is None:
             self.mera.add_mera(ADC, 1.3)
         elif len(self.mera) == 1:
@@ -73,7 +73,7 @@ class CalibrationController(QObject):
         elif len(self.mera) == 2:
             self.mera.add_mera(ADC, 5.0)
         else:
-            self.mera.add_mera(ADC, 1.0)        
+            self.mera.add_mera(ADC, 1.0)
         self.view.Mera_number_lineEdit.setText(str(self.mera.id).replace('.', ','))
         self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]).replace('.', ','))
         self.view.Measure_mera_lineEdit.setText(str(self.mera.ADC[self.mera.id - 1]).replace('.', ','))
@@ -108,6 +108,25 @@ class CalibrationController(QObject):
                 nominal = np.array(self.mera.nominal_value)
             k, b = calibrate(self.mera.ADC, nominal)
             self.calib_nominal = k * np.linspace(0, 255, 256) + b
+            self.calib_nominal = np.clip(self.calib_nominal, 0, 1)
+
+            # Присваиваем значения на прямой серым образцам
+            x1_1 = int(self.video_cap.calib_obj_crosshair[0][0] - self.video_cap.calib_obj_crosshair[2] / 1.42)
+            x1_2 = int(self.video_cap.calib_obj_crosshair[0][0] + self.video_cap.calib_obj_crosshair[2] / 1.42)
+            x2_1 = int(self.video_cap.calib_obj_crosshair[1][0] - self.video_cap.calib_obj_crosshair[2] / 1.42)
+            x2_2 = int(self.video_cap.calib_obj_crosshair[1][0] + self.video_cap.calib_obj_crosshair[2] / 1.42)
+            y1_1 = int(self.video_cap.calib_obj_crosshair[0][1] - self.video_cap.calib_obj_crosshair[2] / 1.42)
+            y1_2 = int(self.video_cap.calib_obj_crosshair[0][1] + self.video_cap.calib_obj_crosshair[2] / 1.42)
+            y2_1 = int(self.video_cap.calib_obj_crosshair[1][1] - self.video_cap.calib_obj_crosshair[2] / 1.42)
+            y2_2 = int(self.video_cap.calib_obj_crosshair[1][1] + self.video_cap.calib_obj_crosshair[2] / 1.42)
+            ADC_obj_1 = (np.mean(self.video_cap.frame_bw_orig[y1_1:y1_2, x1_1:x1_2])*1.5).astype(np.uint8) 
+            ADC_obj_2 = (np.mean(self.video_cap.frame_bw_orig[y2_1:y2_2, x2_1:x2_2])*1.5).astype(np.uint8)
+            gray_template_1 = self.calib_nominal[ADC_obj_1]
+            gray_template_2 = self.calib_nominal[ADC_obj_2]
+            if len(self.gray_temp) > 0:
+                self.gray_temp.clear()
+            self.gray_temp.add_mera(ADC_obj_1, gray_template_1)
+            self.gray_temp.add_mera(ADC_obj_2, gray_template_2)
 
             for row in range(self.view.Mera_Table.rowCount()):
                 ADC = np.uint8(float(self.view.Mera_Table.item(row, 1).text()))
@@ -127,6 +146,10 @@ class CalibrationController(QObject):
             for row in range(self.view.Mera_Table.rowCount()):
                 if self.view.Mera_Table.item(row, 0).text() == str(self.mera.id):
                     self.view.Mera_Table.removeRow(row)
+                    for row in range(self.view.Mera_Table.rowCount()):
+                        if float(self.view.Mera_Table.item(row, 0).text()) > self.mera.id:
+                            self.view.Mera_Table.item(row, 0).setText(
+                                str(int(float(self.view.Mera_Table.item(row, 0).text())) - 1))
                     break
 
             self.mera.delete_mera(self.mera.id - 1)
@@ -144,7 +167,7 @@ class CalibrationController(QObject):
     def minus_nominal(self):
         if self.mera.id is not None:
             if self.mera.nominal_value[self.mera.id - 1] > 0:
-                self.mera.nominal_value[self.mera.id - 1] -= 1
+                self.mera.nominal_value[self.mera.id - 1] -= 0.01
                 self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]).replace('.', ','))
                 for row in range(self.view.Mera_Table.rowCount()):
                     if self.view.Mera_Table.item(row, 0).text() == str(self.mera.id):
@@ -155,7 +178,7 @@ class CalibrationController(QObject):
     def plus_nominal(self):
         if self.mera.id is not None:
             if self.mera.nominal_value[self.mera.id - 1] < 100:
-                self.mera.nominal_value[self.mera.id - 1] += 1
+                self.mera.nominal_value[self.mera.id - 1] += 0.01
                 self.view.Nominal_lineEdit.setText(str(self.mera.nominal_value[self.mera.id - 1]).replace('.', ','))
                 for row in range(self.view.Mera_Table.rowCount()):
                     if self.view.Mera_Table.item(row, 0).text() == str(self.mera.id):
@@ -181,16 +204,17 @@ class CalibrationController(QObject):
 
     def update_plot(self, index):
         if index == 1:
-            index = np.argsort(self.mera.ADC)
-            sorted_ADC = np.array(self.mera.ADC)[index]
             if self.view.units.isChecked():
-                sorted_nominal = 10 ** -np.array(self.mera.nominal_value)[index]
+                nominal = 10 ** -np.array(self.mera.nominal_value)
             elif self.view.units3.isChecked():
-                sorted_nominal = 1 / np.array(self.mera.nominal_value)[index]
+                nominal = 1 / np.array(self.mera.nominal_value)
             elif self.view.units2.isChecked():
-                sorted_nominal = np.array(self.mera.nominal_value)[index]
+                nominal = np.array(self.mera.nominal_value)
             self.view.canvas.axes.cla()
-            self.view.canvas.axes.scatter(sorted_ADC, sorted_nominal, color='m', s=30)
+            self.view.canvas.axes.scatter(self.mera.ADC, nominal, color='m', s=30)
+            self.view.canvas.axes.scatter(self.gray_temp.ADC, self.gray_temp.nominal_value, color='b', s=30)
+            if self.video_cap.calib_LUT is not None:
+                self.view.canvas.axes.plot(self.video_cap.calib_LUT/255, color='r')
             if self.calib_nominal is not None:
                 self.view.canvas.axes.plot(np.linspace(0, 255, 256), self.calib_nominal)
             self.view.canvas.axes.set_xlim(0, 255)

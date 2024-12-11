@@ -62,20 +62,21 @@ class ParamsController(QObject):
         self.view.units3.clicked.connect(self.units_clicked)
 
     def recover_calib(self):
-        calib_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'calib_config.npy')
-        factory_calib_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'factory_calib_config.npy')
+        gray_templates_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'gray_templates.npy')
+        factory_gray_templates_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'factory_gray_templates.npy')
         gain_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'gain_config.npy')
         factory_gain_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'factory_gain_config.npy')
         dark_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'dark_config.npy')
         factory_dark_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'factory_dark_config.npy')
 
-        Path(calib_file).unlink(missing_ok=True)
+        Path(gray_templates_file).unlink(missing_ok=True)
         Path(gain_file).unlink(missing_ok=True)
         Path(dark_file).unlink(missing_ok=True)
 
-        if Path(factory_calib_file).exists():
-            self.video_cap.calib_LUT = np.load(Path(factory_calib_file))
+        if Path(factory_gray_templates_file).exists():
+            self.video_cap.gray_templates = np.load(Path(factory_calib_file))
         else:
+            self.video_cap.gray_templates = None
             self.video_cap.calib_LUT = None
         if Path(factory_gain_file).exists():
             self.video_cap.gain = np.load(Path(factory_gain_file))
