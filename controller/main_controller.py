@@ -15,6 +15,7 @@ class MainController(QObject):
         super().__init__()
         self.view = view
         self.connect_controllers()
+        self.connect_slots()
         path = Path(PurePath(Path(__file__).parent.parent, 'src', 'settings.ini'))
         self.settings = QSettings(str(path), QSettings.Format.IniFormat)
         self.setupUI()
