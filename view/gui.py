@@ -15,6 +15,7 @@ from pathlib import PurePath, Path
 from utils import MlpCanvas
 from . import resources
 
+
 class CameraApp(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -26,6 +27,10 @@ class CameraApp(QtWidgets.QMainWindow):
         Widget.setMaximumSize(QtCore.QSize(800, 480))
         Widget.setMinimumSize(QtCore.QSize(800, 480))
         Widget.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
+
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/switch.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
         self.Img_label = QtWidgets.QLabel(Widget)
         self.Img_label.setGeometry(QtCore.QRect(2, 0, 360, 480))
         self.Img_label.setMaximumSize(QtCore.QSize(480, 720))
@@ -33,7 +38,7 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Img_label.setText("")
         self.Img_label.setObjectName("Img_label")
         self.tabWidget = QtWidgets.QTabWidget(Widget)
-        self.tabWidget.setGeometry(QtCore.QRect(364, 15 , 439, 483))
+        self.tabWidget.setGeometry(QtCore.QRect(364, 15, 439, 483))
         self.tabWidget.setMaximumSize(QtCore.QSize(800, 600))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -56,7 +61,7 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Contrast_Label.setObjectName("Contrast_Label")
         self.Measure_pushButton = QtWidgets.QPushButton(self.Measure_page)
         self.Measure_pushButton.setEnabled(True)
-        self.Measure_pushButton.setGeometry(QtCore.QRect(32, 340, 371, 70))
+        self.Measure_pushButton.setGeometry(QtCore.QRect(32, 330, 371, 90))
         font = QtGui.QFont()
         font.setPointSize(20)
         font.setStyleStrategy(QtGui.QFont.PreferAntialias)
@@ -484,8 +489,6 @@ class CameraApp(QtWidgets.QMainWindow):
         self.White_LED_Switch = QtWidgets.QPushButton(self.page_3)
         self.White_LED_Switch.setGeometry(QtCore.QRect(338, 6, 50, 50))
         self.White_LED_Switch.setText("")
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/switch.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.White_LED_Switch.setIcon(icon1)
         self.White_LED_Switch.setIconSize(QtCore.QSize(20, 20))
         self.White_LED_Switch.setCheckable(True)
@@ -523,11 +526,24 @@ class CameraApp(QtWidgets.QMainWindow):
         self.Control_tabWidget.addTab(self.tab_service, "Сервисные")
         self.verticalLayout.addWidget(self.Control_tabWidget)
         self.tabWidget.addTab(self.Control_page, "")
-
         self.retranslateUi(Widget)
         self.tabWidget.setCurrentIndex(0)
         self.Calib_tab.setCurrentIndex(0)
         self.Control_tabWidget.setCurrentIndex(0)
+
+        self.power_button = QtWidgets.QPushButton(self)
+        self.power_button.setGeometry(QtCore.QRect(755, 3, 40, 40))
+        self.power_button.setIcon(icon1)
+        self.power_button.setIconSize(QtCore.QSize(20, 20))
+        self.power_button.setStyleSheet('QPushButton {'
+                                        'background-color: #E15343;'
+                                        'border-style: outset;'
+                                        '}'
+                                        'QPushButton:pressed {'
+                                        'background-color: #A14323;'
+                                        'border-style: intset;'
+                                        '}')
+        self.power_button.setObjectName('power_button')
 
     def retranslateUi(self, Widget):
         _translate = QtCore.QCoreApplication.translate

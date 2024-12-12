@@ -74,7 +74,7 @@ class ParamsController(QObject):
         Path(dark_file).unlink(missing_ok=True)
 
         if Path(factory_gray_templates_file).exists():
-            self.video_cap.gray_templates = np.load(Path(factory_calib_file))
+            self.video_cap.gray_templates = np.load(Path(factory_gray_templates_file))
         else:
             self.video_cap.gray_templates = None
             self.video_cap.calib_LUT = None

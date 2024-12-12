@@ -4,8 +4,10 @@ from PyQt5.QtCore import QObject
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import QSettings
 from pathlib import Path, PurePath
-from controller import CalibrationController, VideoCapture, ParamsController, MeasureController, LedController
+from controller import CalibrationController, VideoCapture, ParamsController, MeasureController, LedController, \
+    Authentication
 import platform
+import subprocess
 
 
 class MainController(QObject):
@@ -26,7 +28,8 @@ class MainController(QObject):
             font = QtGui.QFont()
             font.setPointSize(30)
             self.view.Contrast_Label.setFont(font)
-            self.view.Hist_scale_checkbox.setChecked(self.settings.value('img_capture_params/Hist_scale_checkbox', type=bool))
+            self.view.Hist_scale_checkbox.setChecked(
+                self.settings.value('img_capture_params/Hist_scale_checkbox', type=bool))
         else:
             self.view.Hist_Widget.hide()
             self.view.EN_Hist_checkBox.setChecked(self.settings.value('img_capture_params/EN_Hist_checkBox', type=bool))
@@ -79,3 +82,15 @@ class MainController(QObject):
         self.calibration_controller = CalibrationController(self.view, self.video_capture)
         self.params_controller = ParamsController(self.view, self.video_capture, self.measure_controller,
                                                   self.led_controller)
+        self.authenticated_controller = Authentication(self.view)
+
+    def connect_slots(self):
+        self.view.power_button.clicked.connect(self.power_off)
+
+    def power_off(self):
+        if platform.system() != "Windows":
+            try:
+                subprocess.run(["sudo", "shutdown", "now"], check=True)
+                print("Выключение...")
+            except subprocess.CalledProcessError as e:
+                print(f'Error: {e}')
