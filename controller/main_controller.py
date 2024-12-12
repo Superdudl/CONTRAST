@@ -1,3 +1,4 @@
+from distutils.command.check import check
 from sys import platform
 
 from PyQt5.QtCore import QObject
@@ -91,7 +92,7 @@ class MainController(QObject):
     def power_off(self):
         if platform.system() != "Windows":
             try:
-                subprocess.run(["sudo", "shutdown", "now"], check=True)
+                subprocess.run("poweroff", check=True)
                 print("Выключение...")
             except subprocess.CalledProcessError as e:
                 print(f'Error: {e}')

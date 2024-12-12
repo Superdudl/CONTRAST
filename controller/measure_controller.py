@@ -40,6 +40,7 @@ class MeasureController(QObject):
         self.video_cap = video_cap
         self.view = view
         self.led = led
+        self.worker = None
         self.setupUI()
 
     def setupUI(self):
@@ -65,7 +66,9 @@ class MeasureController(QObject):
             self.video_cap.timer.start()
             if not self.view.Capture_image_checkBox.isChecked():
                 self.view.Measure_pushButton.setEnabled(True)
-
+        if self.worker is not None:
+            if self.worker.isRunning():
+                return
         self.video_cap.timer.stop()
         self.worker = WorkerThread(self.video_cap, self.view, self.led)
         self.worker.finished_signal.connect(start_timer)
