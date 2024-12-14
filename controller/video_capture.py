@@ -64,8 +64,6 @@ class VideoCapture(QObject):
             self.camera.configure(config)
             self.camera.set_controls(self.ctrls)
             self.camera.start()
-            metadata = self.camera.capture_metadata()
-            print(metadata)
 
         self.view = view
         self.timer = QTimer()

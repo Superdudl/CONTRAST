@@ -34,11 +34,12 @@ def calc_contrast(img):
     if np.any(numbers_mask) and np.any(paper_mask):
         unique_numbers, counts1 = np.unique(img[img * numbers_mask > 0].ravel(), return_counts=True)
         unique_paper, counts2 = np.unique(img[img * paper_mask > 0].ravel(), return_counts=True)
-        avg_numbers = unique_numbers[np.argmax(counts1)]
-        avg_paper = unique_paper[np.argmax(counts2)]
-        # avg_numbers = np.mean(img[img * numbers_mask > 0])
-        # avg_paper = np.mean(img[img * paper_mask > 0])
-    contrast = avg_paper / avg_numbers if avg_numbers is not None and avg_paper is not None else None
+        if counts1.size != 0 and counts2.size != 0:
+            avg_numbers = unique_numbers[np.argmax(counts1)]
+            avg_paper = unique_paper[np.argmax(counts2)]
+            # avg_numbers = np.mean(img[img * numbers_mask > 0])
+            # avg_paper = np.mean(img[img * paper_mask > 0])
+        contrast = avg_paper / avg_numbers if avg_numbers is not None and avg_paper is not None else None
 
     return {
         'avg_numbers': avg_numbers,

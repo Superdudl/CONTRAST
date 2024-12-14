@@ -26,7 +26,7 @@ class MainController(QObject):
         if self.settings.value('img_capture_params/EN_Hist_checkBox', type=bool):
             self.view.Hist_Widget.show()
             self.view.EN_Hist_checkBox.setChecked(self.settings.value('img_capture_params/EN_Hist_checkBox', type=bool))
-            self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 220, 300, 140))
+            self.view.Contrast_Label.setGeometry(QtCore.QRect(55, 220, 350, 140))
             font = QtGui.QFont()
             font.setPointSize(30)
             self.view.Contrast_Label.setFont(font)
@@ -35,12 +35,12 @@ class MainController(QObject):
         else:
             self.view.Hist_Widget.hide()
             self.view.EN_Hist_checkBox.setChecked(self.settings.value('img_capture_params/EN_Hist_checkBox', type=bool))
-            self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 130, 300, 140))
+            self.view.Contrast_Label.setGeometry(QtCore.QRect(55, 130, 350, 140))
             font = QtGui.QFont()
-            font.setPointSize(100)
+            font.setPointSize(80)
             self.view.Contrast_Label.setFont(font)
         self.view.Contrast_Label.setFont(font)
-        self.view.Contrast_Label.setText("0,00")
+        self.view.Contrast_Label.setText("-")
 
         # Восстановление режима захвата при движении
 
@@ -59,7 +59,7 @@ class MainController(QObject):
             self.video_capture.camera.set_controls({'ExposureTime': self.settings.value('timeExposure', type=int)})
 
         self.params_controller.time_exposition = self.settings.value('timeExposure',
-                                                                     self.params_controller.time_exposition, type=int)
+                                                                     int(self.params_controller.time_exposition), type=int)
         self.view.Exposition_lineEdit.setText(
             str(self.settings.value('timeExposure', defaultValue=int(self.video_capture.ctrls["ExposureTime"]),
                                     type=int) / 1000).replace('.', ','))
@@ -76,6 +76,14 @@ class MainController(QObject):
         self.view.units.setChecked(self.settings.value('units/units', type=bool))
         self.view.units2.setChecked(self.settings.value('units/units2', type=bool))
         self.view.units3.setChecked(self.settings.value('units/units3', type=bool))
+
+        # Востановление настроек режима измерения
+        self.view.user_mode.setChecked(self.settings.value('measure_mode/user_mode', type=bool))
+        self.view.expert_mode.setChecked(self.settings.value('measure_mode/expert_mode', type=bool))
+        if self.view.user_mode.isChecked():
+            self.view.MIN_MAX.show()
+        else:
+            self.view.MIN_MAX.hide()
 
     def connect_controllers(self):
         self.video_capture = VideoCapture(self.view)

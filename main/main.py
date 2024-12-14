@@ -2,10 +2,10 @@ from PyQt5.QtWidgets import QApplication
 import sys
 import platform
 from pathlib import Path, PurePath
-from view import CameraApp
-from controller import MainController
 
 sys.path.append(str(PurePath(Path(__file__).parent.parent)))
+from view import CameraApp
+from controller import MainController
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
