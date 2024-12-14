@@ -9,7 +9,8 @@ from controller import MainController
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    app.setStyleSheet(Path(PurePath(Path(__file__).parent.parent, 'view', 'styleSheet.qss')).read_text())
+    style_path = PurePath(Path(__file__).parent.parent, 'view', 'styleSheet.qss')
+    app.setStyleSheet(Path(style_path).read_text())
     ex = CameraApp()
     main_controller = MainController(ex)
     if platform.system() != "Windows":
