@@ -1,11 +1,14 @@
+from distutils.command.check import check
 from sys import platform
 
 from PyQt5.QtCore import QObject
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import QSettings
 from pathlib import Path, PurePath
-from controller import CalibrationController, VideoCapture, ParamsController, MeasureController, LedController
+from controller import CalibrationController, VideoCapture, ParamsController, MeasureController, LedController, \
+    Authentication
 import platform
+import subprocess
 
 
 class MainController(QObject):
@@ -13,6 +16,7 @@ class MainController(QObject):
         super().__init__()
         self.view = view
         self.connect_controllers()
+        self.connect_slots()
         path = Path(PurePath(Path(__file__).parent.parent, 'src', 'settings.ini'))
         self.settings = QSettings(str(path), QSettings.Format.IniFormat)
         self.setupUI()
@@ -22,20 +26,21 @@ class MainController(QObject):
         if self.settings.value('img_capture_params/EN_Hist_checkBox', type=bool):
             self.view.Hist_Widget.show()
             self.view.EN_Hist_checkBox.setChecked(self.settings.value('img_capture_params/EN_Hist_checkBox', type=bool))
-            self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 220, 300, 140))
+            self.view.Contrast_Label.setGeometry(QtCore.QRect(55, 220, 350, 140))
             font = QtGui.QFont()
             font.setPointSize(30)
             self.view.Contrast_Label.setFont(font)
-            self.view.Hist_scale_checkbox.setChecked(self.settings.value('img_capture_params/Hist_scale_checkbox', type=bool))
+            self.view.Hist_scale_checkbox.setChecked(
+                self.settings.value('img_capture_params/Hist_scale_checkbox', type=bool))
         else:
             self.view.Hist_Widget.hide()
             self.view.EN_Hist_checkBox.setChecked(self.settings.value('img_capture_params/EN_Hist_checkBox', type=bool))
-            self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 130, 300, 140))
+            self.view.Contrast_Label.setGeometry(QtCore.QRect(55, 130, 350, 140))
             font = QtGui.QFont()
-            font.setPointSize(100)
+            font.setPointSize(80)
             self.view.Contrast_Label.setFont(font)
         self.view.Contrast_Label.setFont(font)
-        self.view.Contrast_Label.setText("0,00")
+        self.view.Contrast_Label.setText("-")
 
         # Восстановление режима захвата при движении
 
@@ -54,7 +59,7 @@ class MainController(QObject):
             self.video_capture.camera.set_controls({'ExposureTime': self.settings.value('timeExposure', type=int)})
 
         self.params_controller.time_exposition = self.settings.value('timeExposure',
-                                                                     self.params_controller.time_exposition, type=int)
+                                                                     int(self.params_controller.time_exposition), type=int)
         self.view.Exposition_lineEdit.setText(
             str(self.settings.value('timeExposure', defaultValue=int(self.video_capture.ctrls["ExposureTime"]),
                                     type=int) / 1000).replace('.', ','))
@@ -72,6 +77,14 @@ class MainController(QObject):
         self.view.units2.setChecked(self.settings.value('units/units2', type=bool))
         self.view.units3.setChecked(self.settings.value('units/units3', type=bool))
 
+        # Востановление настроек режима измерения
+        self.view.user_mode.setChecked(self.settings.value('measure_mode/user_mode', type=bool))
+        self.view.expert_mode.setChecked(self.settings.value('measure_mode/expert_mode', type=bool))
+        if self.view.user_mode.isChecked():
+            self.view.MIN_MAX.show()
+        else:
+            self.view.MIN_MAX.hide()
+
     def connect_controllers(self):
         self.video_capture = VideoCapture(self.view)
         self.led_controller = LedController()
@@ -79,3 +92,15 @@ class MainController(QObject):
         self.calibration_controller = CalibrationController(self.view, self.video_capture)
         self.params_controller = ParamsController(self.view, self.video_capture, self.measure_controller,
                                                   self.led_controller)
+        self.authenticated_controller = Authentication(self.view)
+
+    def connect_slots(self):
+        self.view.power_button.clicked.connect(self.power_off)
+
+    def power_off(self):
+        if platform.system() != "Windows":
+            try:
+                subprocess.run("poweroff", check=True)
+                print("Выключение...")
+            except subprocess.CalledProcessError as e:
+                print(f'Error: {e}')

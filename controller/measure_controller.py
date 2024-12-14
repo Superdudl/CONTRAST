@@ -7,29 +7,52 @@ import cv2
 import platform
 
 
-class WorkerThread(QThread):
+class ContrastThread(QThread):
     finished_signal = pyqtSignal()
 
-    def __init__(self, video_cap, view, led):
+    def __init__(self, video_cap, view, led, avg_num=3):
         super().__init__()
         self.video_cap = video_cap
         self.view = view
         self.led = led
+        self.avg_num = np.clip(avg_num, 1, None)
 
     def run(self):
         pwm = self.led.white_pwm
         self.view.Measure_pushButton.setEnabled(False)
         self.led.set_white_led_pwm(0)
+
         x1, y1 = self.video_cap.crosshair[0][0], self.video_cap.crosshair[0][1]
         x2, y2 = self.video_cap.crosshair[1][0], self.video_cap.crosshair[1][1]
-        res = calc_contrast(self.video_cap.frame_bw[y1:y2, x1:x2])
+        frame = self.video_cap.frame_bw[y1:y2, x1:x2]
+        result = []
+        for i in range(0, self.avg_num):
+            res = calc_contrast(frame)
+            result.append(res['contrast'])
+            self.video_cap.update_frame(update_preview=False)
+            frame = self.video_cap.frame_bw[y1:y2, x1:x2]
+                
+        res = np.mean(result)
+
         if platform.system != 'Windows':
             cv2.imwrite('/home/contrast/shared/YUV.png', self.video_cap.frame)
         self.led.set_white_led_pwm(pwm)
-        if res["contrast"] is not None and (self.view.units2.isChecked() or self.view.units3.isChecked()):
-            self.view.Contrast_Label.setText(f'{res["contrast"]:.2f}'.replace('.', ','))
-        if res["contrast"] is not None and self.view.units.isChecked():
-            res = np.log10(res['contrast'])
+        if res is not None and self.view.units.isChecked():
+            res = np.log10(res)
+        elif res is None:
+            self.view.Contrast_Label.setText('-')
+        if self.view.user_mode.isChecked():
+            MIN = float(self.view.label_MIN_input.text().replace(',', '.'))
+            MAX = float(self.view.label_MAX_input.text().replace(',', '.'))
+
+            if res is not None and MIN < res < MAX:
+                res = 'НОРМ'
+            elif res is not None and res < MIN:
+                res = 'МИН'
+            elif res is not None and res > MAX:
+                res = 'МАКС'
+            self.view.Contrast_Label.setText(res)
+        if self.view.expert_mode.isChecked():
             self.view.Contrast_Label.setText(f'{res:.2f}'.replace('.', ','))
         self.finished_signal.emit()
 
@@ -40,12 +63,13 @@ class MeasureController(QObject):
         self.video_cap = video_cap
         self.view = view
         self.led = led
+        self.worker = None
         self.setupUI()
 
     def setupUI(self):
         # Гистограмма
         self.timer = QTimer()
-        self.timer.timeout.connect(self.calc_hist)
+        self.video_cap.timer.timeout.connect(self.calc_hist)
         self.video_cap.timer.timeout.connect(self.motion_detector)
         self.timer.start(100)
 
@@ -62,12 +86,16 @@ class MeasureController(QObject):
 
     def calc_contrast(self):
         def start_timer():
+            self.video_cap.update_frame(update_preview=True)
             self.video_cap.timer.start()
             if not self.view.Capture_image_checkBox.isChecked():
                 self.view.Measure_pushButton.setEnabled(True)
 
+        if self.worker is not None:
+            if self.worker.isRunning():
+                return
         self.video_cap.timer.stop()
-        self.worker = WorkerThread(self.video_cap, self.view, self.led)
+        self.worker = ContrastThread(self.video_cap, self.view, self.led)
         self.worker.finished_signal.connect(start_timer)
         self.worker.start()
         frame_prewiew = self.video_cap.frame_preview
@@ -88,6 +116,9 @@ class MeasureController(QObject):
                     prev = cv2.GaussianBlur(prev, (21, 21), 3)
                 except cv2.error as e:
                     prev = np.zeros_like(curr)
+
                 diff = cv2.absdiff(prev, curr)
+        
                 if diff[diff < 2].size / diff.size > 0.98:
                     self.calc_contrast()
+

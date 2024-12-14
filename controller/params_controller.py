@@ -31,6 +31,16 @@ class ParamsController(QObject):
         self.view.White_LED_lineEdit.setText(str(self.white_pwm).replace('.', ','))
         self.view.IR_LED_lineEdit.setText(str(self.white_pwm).replace('.', ','))
 
+        # Пороги МИН-НОРМ-МАКС
+        self.MIN = self.settings.value('measure_mode/MIN', defaultValue=0, type=float)
+        self.MAX = self.settings.value('measure_mode/MAX', defaultValue=0, type=float)
+        self.view.label_MIN_input.setText(f'{self.MIN:.2f}'.replace('.', ','))
+        self.view.label_MAX_input.setText(f'{self.MAX:.2f}'.replace('.', ','))
+
+        validator = QtGui.QDoubleValidator(0.0, 10.0, 2)
+        self.view.label_MIN_input.setValidator(validator)
+        self.view.label_MAX_input.setValidator(validator)
+
     def setupUI(self):
         # Настройка захвата изображения
         self.view.EN_Hist_checkBox.clicked.connect(self.hist_checkbox)
@@ -61,9 +71,63 @@ class ParamsController(QObject):
         self.view.units2.clicked.connect(self.units_clicked)
         self.view.units3.clicked.connect(self.units_clicked)
 
+        # Режим измерения
+        self.view.user_mode.clicked.connect(self.user_mode_checked)
+        self.view.MIN_minus_button.clicked.connect(self.MIN_minus)
+        self.view.MIN_plus_button.clicked.connect(self.MIN_plus)
+        self.view.MAX_minus_button.clicked.connect(self.MAX_minus)
+        self.view.MAX_plus_button.clicked.connect(self.MAX_plus)
+        self.view.expert_mode.clicked.connect(self.expert_mode_checked)
+        self.view.label_MIN_input.textChanged.connect(self.change_MIN)
+        self.view.label_MAX_input.textChanged.connect(self.change_MAX)
+
+    def change_MIN(self, text):
+        if len(text) > 0 and text:
+            text = text.replace(',', '.')
+            self.MIN = float(text)
+            self.settings.setValue('measure_mode/MIN', self.MIN)
+
+    def change_MAX(self, text):
+        if len(text) > 0:
+            text = text.replace(',', '.')
+            self.MAX = float(text)
+            self.settings.setValue('measure_mode/MAX', self.MAX)
+
+    def MIN_minus(self):
+        self.MIN = np.clip(self.MIN - 0.1, 0, 10)
+        self.view.label_MIN_input.setText(f'{self.MIN:.2f}'.replace('.', ','))
+        self.settings.setValue('measure_mode/MIN', self.MIN)
+
+    def MIN_plus(self):
+        self.MIN = np.clip(self.MIN + 0.1, 0, 10)
+        self.view.label_MIN_input.setText(f'{self.MIN:.2f}'.replace('.', ','))
+        self.settings.setValue('measure_mode/MIN', self.MIN)
+
+    def MAX_minus(self):
+        self.MAX = np.clip(self.MAX - 0.1, 0, 10)
+        self.view.label_MAX_input.setText(f'{self.MAX:.2f}'.replace('.', ','))
+        self.settings.setValue('measure_mode/MAX', self.MAX)
+
+    def MAX_plus(self):
+        self.MAX = np.clip(self.MAX + 0.1, 0, 10)
+        self.view.label_MAX_input.setText(f'{self.MAX:.2f}'.replace('.', ','))
+        self.settings.setValue('measure_mode/MAX', self.MAX)
+
+    def user_mode_checked(self):
+        self.view.MIN_MAX.show()
+        self.settings.setValue('measure_mode/user_mode', self.view.user_mode.isChecked())
+        self.settings.setValue('measure_mode/expert_mode', self.view.expert_mode.isChecked())
+
+    def expert_mode_checked(self):
+        self.view.MIN_MAX.hide()
+        self.settings.setValue('measure_mode/user_mode', self.view.user_mode.isChecked())
+        self.settings.setValue('measure_mode/expert_mode', self.view.expert_mode.isChecked())
+
+
     def recover_calib(self):
         gray_templates_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'gray_templates.npy')
-        factory_gray_templates_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'factory_gray_templates.npy')
+        factory_gray_templates_file = PurePath(Path(__file__).parent.parent, 'src', 'calib',
+                                               'factory_gray_templates.npy')
         gain_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'gain_config.npy')
         factory_gain_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'factory_gain_config.npy')
         dark_file = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'dark_config.npy')
@@ -74,7 +138,7 @@ class ParamsController(QObject):
         Path(dark_file).unlink(missing_ok=True)
 
         if Path(factory_gray_templates_file).exists():
-            self.video_cap.gray_templates = np.load(Path(factory_calib_file))
+            self.video_cap.gray_templates = np.load(Path(factory_gray_templates_file))
         else:
             self.video_cap.gray_templates = None
             self.video_cap.calib_LUT = None
@@ -87,10 +151,12 @@ class ParamsController(QObject):
         else:
             self.video_cap.dark = None
 
+
     def units_clicked(self):
         self.settings.setValue('units/units', self.view.units.isChecked())
         self.settings.setValue('units/units2', self.view.units2.isChecked())
         self.settings.setValue('units/units3', self.view.units3.isChecked())
+
 
     def switch_white(self, button):
         if self.view.White_LED_Switch.isChecked():
@@ -98,11 +164,13 @@ class ParamsController(QObject):
         else:
             self.led_controller.set_white_led_pwm(duty=0)
 
+
     def switch_ir(self, button):
         if self.view.IR_LED_Switch.isChecked():
             self.led_controller.set_ir_led_pwm(duty=self.ir_pwm)
         else:
             self.led_controller.set_ir_led_pwm(duty=0)
+
 
     def minus_white_led(self):
         self.white_pwm -= 10
@@ -113,6 +181,7 @@ class ParamsController(QObject):
         self.view.White_LED_lineEdit.setText(str(self.white_pwm).replace('.', ','))
         self.settings.setValue('whitePWM', self.white_pwm)
 
+
     def plus_white_led(self):
         self.white_pwm += 10
         if self.white_pwm > 100:
@@ -121,6 +190,7 @@ class ParamsController(QObject):
             self.led_controller.set_white_led_pwm(duty=self.white_pwm)
         self.view.White_LED_lineEdit.setText(str(self.white_pwm).replace('.', ','))
         self.settings.setValue('whitePWM', self.white_pwm)
+
 
     def minus_ir_led(self):
         self.ir_pwm -= 10
@@ -131,6 +201,7 @@ class ParamsController(QObject):
         self.view.IR_LED_lineEdit.setText(str(self.ir_pwm).replace('.', ','))
         self.settings.setValue('irPWM', self.ir_pwm)
 
+
     def plus_ir_led(self):
         self.ir_pwm += 10
         if self.ir_pwm > 100:
@@ -140,31 +211,36 @@ class ParamsController(QObject):
         self.view.IR_LED_lineEdit.setText(str(self.ir_pwm).replace('.', ','))
         self.settings.setValue('irPWM', self.ir_pwm)
 
+
     def show_params_window_user(self, item):
         index = self.view.listWidget.row(item)
         self.view.stackedWidget.setCurrentIndex(index + 1)
+
 
     def show_params_window_service(self, item):
         index = self.view.listWidget_2.row(item)
         self.view.stackedWidget_2.setCurrentIndex(index + 1)
 
+
     def hist_checkbox(self):
         if self.view.EN_Hist_checkBox.isChecked():
             self.view.Hist_Widget.show()
-            self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 220, 300, 140))
+            self.view.Contrast_Label.setGeometry(QtCore.QRect(55, 220, 350, 140))
             font = QtGui.QFont()
             font.setPointSize(30)
             self.view.Contrast_Label.setFont(font)
         else:
             self.view.Hist_Widget.hide()
-            self.view.Contrast_Label.setGeometry(QtCore.QRect(75, 130, 300, 140))
+            self.view.Contrast_Label.setGeometry(QtCore.QRect(55, 130, 350, 140))
             font = QtGui.QFont()
-            font.setPointSize(100)
+            font.setPointSize(80)
             self.view.Contrast_Label.setFont(font)
         self.settings.setValue('img_capture_params/EN_Hist_checkBox', self.view.EN_Hist_checkBox.isChecked())
 
+
     def hist_scale_checkbox(self):
         self.settings.setValue('img_capture_params/Hist_scale_checkbox', self.view.Hist_scale_checkbox.isChecked())
+
 
     def capture_checkbox(self):
         if self.view.Capture_image_checkBox.isChecked():
@@ -176,6 +252,7 @@ class ParamsController(QObject):
             self.settings.setValue('img_capture_params/Capture_image_checkBox',
                                    self.view.Capture_image_checkBox.isChecked())
 
+
     def plus_exposition(self):
         if self.time_exposition + 5e2 <= 1e5:
             self.time_exposition += 5e2
@@ -183,6 +260,7 @@ class ParamsController(QObject):
         if platform.system() != 'Windows':
             self.video_cap.camera.set_controls({'ExposureTime': int(self.time_exposition)})
         self.settings.setValue('timeExposure', self.time_exposition)
+
 
     def minus_exposition(self):
         if self.time_exposition - 5e2 >= 0:

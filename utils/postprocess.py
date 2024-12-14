@@ -1,10 +1,9 @@
 import numpy as np
 import cv2
 import platform
-from scipy.stats import mode
 
 
-def histogram(img, log = False):
+def histogram(img, log=False):
     # Вычисление гистограммы
     bins = 64
     a = cv2.calcHist([img], [0], None, [bins], ranges=(0, 256)).ravel()
@@ -24,28 +23,23 @@ def histogram(img, log = False):
 
 
 def calc_contrast(img):
-    # Определение маски для цифр и бумаги
-    # numbers_mask = (img >= 50) & (img <= 120)
-    # paper_mask = (img >= 200) & (img <= 240)
-    img_shape = img.shape
     numbers_mask = cv2.threshold(img, 127, 1, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-    paper_mask = 1 - numbers_mask 
-    res = np.concatenate((img*paper_mask, img*numbers_mask), axis=1)
+    paper_mask = 1 - numbers_mask
+    res = np.concatenate((img * paper_mask, img * numbers_mask), axis=1)
     if platform.system != 'Windows':
         cv2.imwrite('/home/contrast/shared/masks.png', res)
 
     avg_numbers = None
     avg_paper = None
     if np.any(numbers_mask) and np.any(paper_mask):
-        # avg_numbers = float(mode(img[img * numbers_mask > 0].ravel())[0])
-        # avg_paper = float(mode(img[img * paper_mask > 0].ravel())[0])
         unique_numbers, counts1 = np.unique(img[img * numbers_mask > 0].ravel(), return_counts=True)
         unique_paper, counts2 = np.unique(img[img * paper_mask > 0].ravel(), return_counts=True)
-        avg_numbers = unique_numbers[np.argmax(counts1)]
-        avg_paper = unique_paper[np.argmax(counts2)]
-        # avg_numbers = np.mean(img[img * numbers_mask > 0])
-        # avg_paper = np.mean(img[img * paper_mask > 0])
-    contrast = avg_paper / avg_numbers if avg_numbers is not None and avg_paper is not None else None
+        if counts1.size != 0 and counts2.size != 0:
+            avg_numbers = unique_numbers[np.argmax(counts1)]
+            avg_paper = unique_paper[np.argmax(counts2)]
+            # avg_numbers = np.mean(img[img * numbers_mask > 0])
+            # avg_paper = np.mean(img[img * paper_mask > 0])
+        contrast = avg_paper / avg_numbers if avg_numbers is not None and avg_paper is not None else None
 
     return {
         'avg_numbers': avg_numbers,
@@ -55,8 +49,9 @@ def calc_contrast(img):
         'numbers_mask': numbers_mask.astype(np.uint8) * 255
     }
 
+
 def calc_gain(frame):
     h, w = frame.shape[0], frame.shape[1]
     central_value = frame[int(h / 2), int(w / 2)]
-    gain = central_value/frame
+    gain = central_value / frame
     return np.float32(gain)

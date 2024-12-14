@@ -64,8 +64,6 @@ class VideoCapture(QObject):
             self.camera.configure(config)
             self.camera.set_controls(self.ctrls)
             self.camera.start()
-            metadata = self.camera.capture_metadata()
-            print(metadata)
 
         self.view = view
         self.timer = QTimer()
@@ -100,7 +98,7 @@ class VideoCapture(QObject):
             self.crosshair = (
                 (int(350 / self.scale), int(708 / self.scale)), (int(470 / self.scale), int(828 / self.scale)))
 
-    def update_frame(self):
+    def update_frame(self, update_preview=True):
         def update_LUT():
             nominal_obj_1 = self.gray_templates[0]
             nominal_obj_2 = self.gray_templates[1]
@@ -135,8 +133,8 @@ class VideoCapture(QObject):
             self.orig_frame = self.frame.copy()  # Храним оригинальный кадр без обработки
             self.frame_bw_orig = self.frame[:, :, 0].copy()  # Храним оригинальный ч-б кадр без обработки
 
-            x1, y1 = int(self._x1/self.scale), int(self._y1/self.scale)
-            x2, y2 = int(self._x2/self.scale), int(self._y2/self.scale)
+            x1, y1 = int(self._x1 / self.scale), int(self._y1 / self.scale)
+            x2, y2 = int(self._x2 / self.scale), int(self._y2 / self.scale)
 
             if self.dark is not None:
                 self.frame = cv2.subtract(self.orig_frame, self.dark)
@@ -158,6 +156,7 @@ class VideoCapture(QObject):
             self.frame_preview = cv2.resize(frame, (480, 360))
             self.frame_preview = cv2.rotate(self.frame_preview, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
-        self.qimage = QImage(self.frame_preview, 360, 480, 360 * 3, QImage.Format_RGB888)
-        self.view.Img_label.setPixmap(QPixmap.fromImage(self.qimage))
+        if update_preview:
+            self.qimage = QImage(self.frame_preview, 360, 480, 360 * 3, QImage.Format_RGB888)
+            self.view.Img_label.setPixmap(QPixmap.fromImage(self.qimage))
         return
