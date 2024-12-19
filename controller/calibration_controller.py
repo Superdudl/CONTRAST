@@ -40,6 +40,10 @@ class CalibrationController(QObject):
             calib_path = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'gray_templates.npy')
             np.save(Path(calib_path), np.array(self.gray_temp.nominal_value))
 
+            nominals_path = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'nominals.txt')
+            np.savetxt(Path(nominals_path),
+                       [self.mera.nominal_value[0], self.mera.nominal_value[1], self.mera.nominal_value[2]])
+
     def change_nominal(self, text):
         if self.mera.id is not None and len(text) > 0:
             text = text.replace(',', '.')
@@ -63,15 +67,17 @@ class CalibrationController(QObject):
                     break
 
     def add_mera(self):
+        nominals_path = PurePath(Path(__file__).parent.parent, 'src', 'calib', 'nominals.txt')
+        nominals = np.loadtxt(Path(nominals_path), dtype=float)
         x1, y1 = self.video_cap.crosshair[0][0], self.video_cap.crosshair[0][1]
         x2, y2 = self.video_cap.crosshair[1][0], self.video_cap.crosshair[1][1]
         ADC = np.uint8(np.mean(self.video_cap.frame_bw_noLUT[y1:y2, x1:x2]))
         if self.mera.id is None:
-            self.mera.add_mera(ADC, 1.3)
+            self.mera.add_mera(ADC, nominals[0])
         elif len(self.mera) == 1:
-            self.mera.add_mera(ADC, 1.93)
+            self.mera.add_mera(ADC, nominals[1])
         elif len(self.mera) == 2:
-            self.mera.add_mera(ADC, 5.0)
+            self.mera.add_mera(ADC, nominals[2])
         else:
             self.mera.add_mera(ADC, 1.0)
         self.view.Mera_number_lineEdit.setText(str(self.mera.id).replace('.', ','))
@@ -119,8 +125,8 @@ class CalibrationController(QObject):
             y1_2 = int(self.video_cap.calib_obj_crosshair[0][1] + self.video_cap.calib_obj_crosshair[2] / 1.42)
             y2_1 = int(self.video_cap.calib_obj_crosshair[1][1] - self.video_cap.calib_obj_crosshair[2] / 1.42)
             y2_2 = int(self.video_cap.calib_obj_crosshair[1][1] + self.video_cap.calib_obj_crosshair[2] / 1.42)
-            ADC_obj_1 = (np.mean(self.video_cap.frame_bw_orig[y1_1:y1_2, x1_1:x1_2])*1.5).astype(np.uint8) 
-            ADC_obj_2 = (np.mean(self.video_cap.frame_bw_orig[y2_1:y2_2, x2_1:x2_2])*1.5).astype(np.uint8)
+            ADC_obj_1 = (np.mean(self.video_cap.frame_bw_orig[y1_1:y1_2, x1_1:x1_2]) * 1.5).astype(np.uint8)
+            ADC_obj_2 = (np.mean(self.video_cap.frame_bw_orig[y2_1:y2_2, x2_1:x2_2]) * 1.5).astype(np.uint8)
             gray_template_1 = self.calib_nominal[ADC_obj_1]
             gray_template_2 = self.calib_nominal[ADC_obj_2]
             if len(self.gray_temp) > 0:
@@ -214,7 +220,7 @@ class CalibrationController(QObject):
             self.view.canvas.axes.scatter(self.mera.ADC, nominal, color='m', s=30)
             self.view.canvas.axes.scatter(self.gray_temp.ADC, self.gray_temp.nominal_value, color='b', s=30)
             if self.video_cap.calib_LUT is not None:
-                self.view.canvas.axes.plot(self.video_cap.calib_LUT/255, color='r')
+                self.view.canvas.axes.plot(self.video_cap.calib_LUT / 255, color='r')
             if self.calib_nominal is not None:
                 self.view.canvas.axes.plot(np.linspace(0, 255, 256), self.calib_nominal)
             self.view.canvas.axes.set_xlim(0, 255)
